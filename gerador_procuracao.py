@@ -102,7 +102,8 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                 font_padrao = {'font': 'Arial', 'size': 22}
                 
                 if responsaveis_selecionados:
-                    rt_responsaveis.add(" e funcionários: ", **font_padrao)
+                    # Retirei o espaço do início porque você vai dar o espaço no Google Docs
+                    rt_responsaveis.add("e funcionários: ", **font_padrao)
                     for i, func_key in enumerate(responsaveis_selecionados):
                         dados = RESPONSAVEIS_DB[func_key]
                         rt_responsaveis.add(dados["nome"], bold=True, **font_padrao)
@@ -111,7 +112,7 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                             rt_responsaveis.add("; ", **font_padrao)
                     rt_responsaveis.add(".", **font_padrao)
                 else:
-                    rt_responsaveis.add(".", **font_padrao)
+                    rt_responsaveis.add("", **font_padrao)
                     
                 lista_servicos = [f"• {SERVICOS_DB[s].format(cidade=cidade)}" for s in servicos_selecionados]
                 lista_servicos.append("• Outras autarquias cabíveis ao município.")
