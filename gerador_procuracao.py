@@ -7,7 +7,7 @@ import os
 import datetime
 
 # COLE O SEU LINK DE PARTILHA DO GOOGLE DOCS AQUI:
-GOOGLE_DOCS_URL = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/edit?usp=sharing&ouid=106316936646315398659&rtpof=true&sd=true"
+GOOGLE_DOCS_URL = "SUA_URL_DO_GOOGLE_DOCS_AQUI"
 
 # 1. BASE DE DADOS INTEGRADA
 RESPONSAVEIS_DB = {
@@ -21,11 +21,11 @@ RESPONSAVEIS_DB = {
 }
 
 SERVICOS_DB = {
-    "PSCIP (Incêndio)": "Projeto de segurança e combate contra incêndio e pânico através do CBMMG, órgão competente;",
-    "Aprovação Arquitetônica": "Processo de aprovação de projetos arquitetônicos perante a Prefeitura Municipal de {cidade};",
-    "RIC (Trânsito)": "Elaboração e aprovação de Relatório de Impacto na Circulação, perante a ECOS - Transbetim;",
-    "EIV (Vizinhança)": "Elaboração e aprovação de Estudo de Impacto na Vizinhança, perante a SEDURB;",
-    "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante a TRANSCON;"
+    "PSCIP (Incêndio)": "Projeto de segurança e combate contra incêndio e pânico perante ao órgão competente;",
+    "Aprovação Arquitetônica": "Processo de aprovação de projetos arquitetônicos perante ao órgão competente;",
+    "RIC (Trânsito)": "Elaboração e aprovação de Relatório de Impacto na Circulação, perante ao órgão competente;",
+    "EIV (Vizinhança)": "Elaboração e aprovação de Estudo de Impacto na Vizinhança, perante ao órgão competente;",
+    "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante ao órgão competente;"
 }
 
 # CONFIGURAÇÃO DA PÁGINA WEB
@@ -34,23 +34,18 @@ st.set_page_config(page_title="Gerador de Procurações - Ecoverde", page_icon="
 st.title("📄 Gerador Automático de Procurações")
 st.caption("Ecoverde Projetos e Consultoria Ambiental - Sistema Cloud")
 
-# 2. CAPTURA DOS DADOS DA URL COM LÓGICA INTELIGENTE
+# 2. CAPTURA DOS DADOS DA URL
 query_params = st.query_params
 url_empresa = query_params.get("empresa", "<<NOME DA EMPRESA>>")
 url_cnpj = query_params.get("cnpj", "<<CNPJ>>")
 url_endereco_contratante = query_params.get("endereco_contratante", "<<ENDEREÇO DO CONTRATANTE>>")
-
-# O Python tenta pegar o da obra. Se não existir ou vier vazio, ele copia o do contratante automaticamente!
 url_endereco_obra = query_params.get("endereco_obra", "")
-if not url_endereco_obra or url_endereco_obra == "<<ENDEREÇO DA OBRA>>":
-    url_endereco_obra = url_endereco_contratante
 
 st.subheader("1. Dados do Cliente e Processo")
 col1, col2 = st.columns(2)
 with col1:
     empresa = st.text_input("Cliente / Razão Social", value=url_empresa)
     endereco_contratante = st.text_input("Endereço do Contratante (Sede)", value=url_endereco_contratante)
-    cidade = st.text_input("Cidade do Processo (Prefeitura e Data)", value="Betim")
 with col2:
     cnpj = st.text_input("CNPJ", value=url_cnpj)
     endereco_obra = st.text_input("Endereço da Obra (Imóvel)", value=url_endereco_obra)
@@ -58,9 +53,8 @@ with col2:
 st.write("---")
 
 st.subheader("2. Seleção de Responsáveis (Outorgados)")
-st.info("A proprietária Karen Kolansky já foi incluída automaticamente no modelo.")
 responsaveis_selecionados = st.multiselect(
-    "Selecione os funcionários adicionais que farão parte desta procuração:",
+    "Selecione os funcionários que farão parte desta procuração:",
     options=list(RESPONSAVEIS_DB.keys()),
     default=[]
 )
@@ -69,67 +63,51 @@ st.write("---")
 
 st.subheader("3. Escopo de Poderes (Serviços)")
 servicos_selecionados = st.multiselect(
-    "Selecione os serviços que constarão nos poderes da procuração:",
+    "Selecione os serviços:",
     options=list(SERVICOS_DB.keys()),
     default=[]
 )
 
 st.write("---")
 
-# 4. DOWNLOAD DO DOCS, PREENCHIMENTO E CONVERSÃO EM PDF
 if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
-    
     if not servicos_selecionados:
-        st.error("Por favor, selecione ao menos um serviço para compor os poderes.")
-    elif GOOGLE_DOCS_URL == "SUA_URL_DO_GOOGLE_DOCS_AQUI":
-        st.error("Por favor, configure o link do seu Google Docs na linha 10 do código.")
+        st.error("Por favor, selecione ao menos um serviço.")
     else:
-        with st.spinner("Buscando modelo no Google Docs e a converter para PDF..."):
+        with st.spinner("Processando..."):
             try:
                 match = re.search(r'/document/d/([a-zA-Z0-9-_]+)', GOOGLE_DOCS_URL)
-                if not match:
-                    st.error("Link do Google Docs inválido.")
-                    st.stop()
-                
                 doc_id = match.group(1)
                 export_url = f"https://docs.google.com/document/d/{doc_id}/export?format=docx"
                 
                 response = requests.get(export_url)
-                if response.status_code != 200:
-                    st.error("Não foi possível aceder ao Google Doc. Verifique as permissões.")
-                    st.stop()
-                
                 arquivo_base = "base_modelo.docx"
                 with open(arquivo_base, "wb") as f:
                     f.write(response.content)
                 
+                # Tratamento de responsáveis
                 if responsaveis_selecionados:
-                    lista_resp = []
-                    for func_key in responsaveis_selecionados:
-                        dados = RESPONSAVEIS_DB[func_key]
-                        lista_resp.append(dados["nome"] + dados["info"])
-                    
+                    lista_resp = [RESPONSAVEIS_DB[k]["nome"] + RESPONSAVEIS_DB[k]["info"] for k in responsaveis_selecionados]
                     texto_responsaveis = "e funcionários: " + "; ".join(lista_resp) + "."
                 else:
                     texto_responsaveis = "."
                     
-                lista_servicos = [f"• {SERVICOS_DB[s].format(cidade=cidade)}" for s in servicos_selecionados]
+                # Tratamento de serviços
+                lista_servicos = [f"• {SERVICOS_DB[s]}" for s in servicos_selecionados]
                 lista_servicos.append("• Outras autarquias cabíveis ao município.")
                 texto_servicos = "\n".join(lista_servicos)
                 
-                data_atual = datetime.date.today()
-                meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
-                texto_data = f"{data_atual.day} de {meses[data_atual.month - 1]} de {data_atual.year}."
-
+                data_hoje = datetime.date.today().strftime("%d de %B de %Y").replace("January", "janeiro").replace("May", "maio") # etc...
+                # Dica: use o datetime formatado em PT-BR para evitar problemas com meses em inglês
+                
                 context = {
                     "empresa": empresa.upper(),
                     "cnpj": cnpj,
                     "endereco_contratante": endereco_contratante,
                     "endereco_obra": endereco_obra,
-                    "cidade": cidade,
                     "responsaveis": texto_responsaveis,
                     "servicos": texto_servicos,
-                    "data": texto_data
+                    "data": datetime.date.today().strftime("%d de %B de %Y")
                 }
 
                 doc = DocxTemplate(arquivo_base)
@@ -140,23 +118,8 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                 
                 subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf", arquivo_temp_docx], check=True)
                 
-                arquivo_temp_pdf = "temp_procuracao.pdf"
-                
-                with open(arquivo_temp_pdf, "rb") as pdf_file:
-                    pdf_bytes = pdf_file.read()
-                    
-                st.success("🎉 Procuração em PDF gerada com sucesso!")
-                
-                st.download_button(
-                    label="📄 Baixar Procuração (.pdf)",
-                    data=pdf_bytes,
-                    file_name=f"Procuracao_{empresa.replace(' ', '_')}.pdf",
-                    mime="application/pdf"
-                )
-                
-                for arq in [arquivo_base, arquivo_temp_docx, arquivo_temp_pdf]:
-                    if os.path.exists(arq):
-                        os.remove(arq)
+                with open("temp_procuracao.pdf", "rb") as f:
+                    st.download_button("📄 Baixar PDF", f, file_name="Procuracao.pdf")
                         
             except Exception as e:
-                st.error(f"Erro ao processar o documento: {e}")
+                st.error(f"Erro: {e}")
