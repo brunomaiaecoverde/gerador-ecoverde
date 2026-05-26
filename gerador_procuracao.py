@@ -6,10 +6,10 @@ import subprocess
 import os
 import datetime
 
-# PASTE SEU LINK DE COMPARTILHAMENTO DO GOOGLE DOCS AQUI:
+# COLE O SEU LINK DE PARTILHA DO GOOGLE DOCS AQUI:
 GOOGLE_DOCS_URL = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/edit?usp=sharing&ouid=106316936646315398659&rtpof=true&sd=true"
 
-# 1. BANCO DE DADOS INTEGRADO
+# 1. BASE DE DADOS INTEGRADA
 RESPONSAVEIS_DB = {
     "Gabriela Freitas": {"nome": "Gabriela Ferreira de Freitas", "info": ", brasileira, solteira, líder de projetos júnior 2, CPF 121.142.656-41"},
     "Shérida Silva": {"nome": "Shérida Patrícia Milanez Silva", "info": ", brasileira, casada, Analista de integração de projetos júnior, CPF 072.958.656-16"},
@@ -31,10 +31,10 @@ SERVICOS_DB = {
 # CONFIGURAÇÃO DA PÁGINA WEB
 st.set_page_config(page_title="Gerador de Procurações - Ecoverde", page_icon="📄", layout="centered")
 
-st.title("📄 Gerador Automático de Procurações (Nuvem)")
-st.caption("Ecoverde Projetos e Consultoria Ambiental")
+st.title("📄 Gerador Automático de Procurações")
+st.caption("Ecoverde Projetos e Consultoria Ambiental - Sistema Cloud")
 
-# 2. CAPTURA DOS DADOS DA URL (Vindos do Notion)
+# 2. CAPTURA DOS DADOS DA URL
 query_params = st.query_params
 url_empresa = query_params.get("empresa", "<<NOME DA EMPRESA>>")
 url_cnpj = query_params.get("cnpj", "<<CNPJ>>")
@@ -76,33 +76,30 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
     if not servicos_selecionados:
         st.error("Por favor, selecione ao menos um serviço para compor os poderes.")
     elif GOOGLE_DOCS_URL == "SUA_URL_DO_GOOGLE_DOCS_AQUI":
-        st.error("Por favor, configure o link do seu Google Docs na linha 9 do código.")
+        st.error("Por favor, configure o link do seu Google Docs na linha 10 do código.")
     else:
-        with st.spinner("Buscando modelo no Google Docs e convertendo para PDF..."):
+        with st.spinner("Buscando modelo no Google Docs e a converter para PDF..."):
             try:
-                # Extrai o ID do documento da URL fornecida
                 match = re.search(r'/document/d/([a-zA-Z0-9-_]+)', GOOGLE_DOCS_URL)
                 if not match:
                     st.error("Link do Google Docs inválido.")
                     st.stop()
                 
                 doc_id = match.group(1)
-                # Link mágico que faz o Google Docs exportar como arquivo Word em segundo plano
                 export_url = f"https://docs.google.com/document/d/{doc_id}/export?format=docx"
                 
-                # Baixa o arquivo base
                 response = requests.get(export_url)
                 if response.status_code != 200:
-                    st.error("Não foi possível acessar o Google Doc. Verifique as permissões de compartilhamento.")
+                    st.error("Não foi possível aceder ao Google Doc. Verifique as permissões.")
                     st.stop()
                 
                 arquivo_base = "base_modelo.docx"
                 with open(arquivo_base, "wb") as f:
                     f.write(response.content)
                 
-                # Processamento do texto com formatação rigorosa
                 rt_responsaveis = RichText()
-                font_padrao = {'font': 'Calibri Light', 'size': 24} # 24 meias-pontos = 12pt
+                # Fonte ajustada para a nuvem: Arial tamanho 11 (22 meias-pontos)
+                font_padrao = {'font': 'Arial', 'size': 22}
                 
                 if responsaveis_selecionados:
                     rt_responsaveis.add(" e funcionários: ", **font_padrao)
@@ -134,14 +131,12 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                     "data": texto_data
                 }
 
-                # Aplica as variáveis no arquivo baixado do Google Docs
                 doc = DocxTemplate(arquivo_base)
                 doc.render(context)
                 
                 arquivo_temp_docx = "temp_procuracao.docx"
                 doc.save(arquivo_temp_docx)
                 
-                # O SEGREDO DA NUVEM: Converte DOCX para PDF usando o LibreOffice do servidor Linux
                 subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf", arquivo_temp_docx], check=True)
                 
                 arquivo_temp_pdf = "temp_procuracao.pdf"
@@ -158,7 +153,6 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                     mime="application/pdf"
                 )
                 
-                # Limpa o servidor temporário
                 for arq in [arquivo_base, arquivo_temp_docx, arquivo_temp_pdf]:
                     if os.path.exists(arq):
                         os.remove(arq)
