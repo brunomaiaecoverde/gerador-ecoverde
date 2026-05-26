@@ -7,7 +7,7 @@ import os
 import datetime
 
 # COLE O SEU LINK DE PARTILHA DO GOOGLE DOCS AQUI:
-GOOGLE_DOCS_URL = "SUA_URL_DO_GOOGLE_DOCS_AQUI"
+GOOGLE_DOCS_URL = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/edit?usp=sharing&ouid=106316936646315398659&rtpof=true&sd=true"
 
 # 1. BASE DE DADOS INTEGRADA
 RESPONSAVEIS_DB = {
