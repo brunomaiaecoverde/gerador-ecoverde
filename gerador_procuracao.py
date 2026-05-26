@@ -34,16 +34,18 @@ st.set_page_config(page_title="Gerador de Procurações - Ecoverde", page_icon="
 st.title("📄 Gerador Automático de Procurações")
 st.caption("Ecoverde Projetos e Consultoria Ambiental - Sistema Cloud")
 
-# 2. CAPTURA DOS DADOS DA URL
+# 2. CAPTURA DOS DADOS DA URL COM LÓGICA INTELIGENTE
 query_params = st.query_params
 url_empresa = query_params.get("empresa", "<<NOME DA EMPRESA>>")
 url_cnpj = query_params.get("cnpj", "<<CNPJ>>")
 url_endereco_contratante = query_params.get("endereco_contratante", "<<ENDEREÇO DO CONTRATANTE>>")
-url_endereco_obra = query_params.get("endereco_obra", "<<ENDEREÇO DA OBRA>>")
+
+# O Python tenta pegar o da obra. Se não existir ou vier vazio, ele copia o do contratante automaticamente!
+url_endereco_obra = query_params.get("endereco_obra", "")
+if not url_endereco_obra or url_endereco_obra == "<<ENDEREÇO DA OBRA>>":
+    url_endereco_obra = url_endereco_contratante
 
 st.subheader("1. Dados do Cliente e Processo")
-
-# Reorganizado para acomodar os dois endereços
 col1, col2 = st.columns(2)
 with col1:
     empresa = st.text_input("Cliente / Razão Social", value=url_empresa)
@@ -122,8 +124,8 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                 context = {
                     "empresa": empresa.upper(),
                     "cnpj": cnpj,
-                    "endereco_contratante": endereco_contratante, # Variável 1
-                    "endereco_obra": endereco_obra,               # Variável 2
+                    "endereco_contratante": endereco_contratante,
+                    "endereco_obra": endereco_obra,
                     "cidade": cidade,
                     "responsaveis": texto_responsaveis,
                     "servicos": texto_servicos,
