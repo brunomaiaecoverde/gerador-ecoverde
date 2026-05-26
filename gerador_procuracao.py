@@ -56,7 +56,7 @@ st.info("A proprietária Karen Kolansky já foi incluída automaticamente no mod
 responsaveis_selecionados = st.multiselect(
     "Selecione os funcionários adicionais que farão parte desta procuração:",
     options=list(RESPONSAVEIS_DB.keys()),
-    default=["Gabriela Freitas", "Bruno Maia"]
+    default=[]
 )
 
 st.write("---")
