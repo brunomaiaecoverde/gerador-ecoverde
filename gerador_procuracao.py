@@ -6,7 +6,7 @@ import subprocess
 import os
 import datetime
 
-# LINKS DOS MODELOS (Google Docs configurados para exportação)
+# LINKS DOS MODELOS (Google Docs)
 URL_PROCURACAO = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/export?format=docx"
 URL_DISTRATO = "https://docs.google.com/document/d/1Tf6rRbCnBTBcWFr-pVDw7sBV0yZRqeqa/export?format=docx"
 
@@ -29,6 +29,20 @@ SERVICOS_DB = {
     "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante ao órgão competente;"
 }
 
+# LISTA DE SERVIÇOS PARA O TERMO DE FINALIZAÇÃO
+LISTA_FINALIZACAO = [
+    "Elaboração de Projeto de Incêndio PTD",
+    "Elaboração de Projeto de Incêndio PT/PTS",
+    "Renovação de AVCB/CLCB",
+    "Atualização do Projeto de Incêndio",
+    "Elaboração de Projeto de Combate a Incêndio",
+    "Projeto Arquitetônico",
+    "Treinamento de Brigada",
+    "Vigilância Sanitária",
+    "Relatório de Impacto na Circulação",
+    "Estudo de Impacto na Vizinhança"
+]
+
 st.set_page_config(page_title="Sistema Ecoverde", page_icon="📄", layout="centered")
 
 # --- CONTROLE DE NAVEGAÇÃO (MEMÓRIA DO SITE) ---
@@ -36,24 +50,29 @@ if 'setor_selecionado' not in st.session_state:
     st.session_state.setor_selecionado = None
 if 'doc_selecionado' not in st.session_state:
     st.session_state.doc_selecionado = None
+if 'servico_finalizacao' not in st.session_state:
+    st.session_state.servico_finalizacao = None
 
 def alterar_setor(nome_setor):
     st.session_state.setor_selecionado = nome_setor
-    st.session_state.doc_selecionado = None # Reseta o documento ao trocar de setor
+    st.session_state.doc_selecionado = None
+    st.session_state.servico_finalizacao = None
 
 def alterar_doc(nome_doc):
     st.session_state.doc_selecionado = nome_doc
+    st.session_state.servico_finalizacao = None
 
-# --- PÁGINA INICIAL (MENU DE CARDS GRANDES) ---
+def alterar_servico_fin(nome_servico):
+    st.session_state.servico_finalizacao = nome_servico
+
+# --- NÍVEL 1: MENU DE CARDS GRANDES (SETORES) ---
 if st.session_state.setor_selecionado is None:
     st.title("🏢 Sistema Central Ecoverde")
     st.write("Selecione um setor abaixo para iniciar:")
     
     st.write("---")
     
-    # Usando colunas e botões primários para dar destaque visual
     col1, col2 = st.columns(2, gap="large")
-    
     with col1:
         st.button("🏗️ PROJETOS", on_click=alterar_setor, args=("Projetos",), use_container_width=True, type="primary")
         st.button("🌱 MEIO AMBIENTE", on_click=alterar_setor, args=("Meio Ambiente",), use_container_width=True)
@@ -62,10 +81,10 @@ if st.session_state.setor_selecionado is None:
         st.button("📊 GESTÃO AMBIENTAL", on_click=alterar_setor, args=("Gestão Ambiental",), use_container_width=True)
         st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True)
 
-# --- PÁGINA DO SETOR: PROJETOS ---
+# --- NÍVEL 2 E 3: SETOR DE PROJETOS ---
 elif st.session_state.setor_selecionado == "Projetos":
     
-    # NÍVEL 1: SELEÇÃO DE DOCUMENTO (Cards Menores)
+    # NÍVEL 2: SELEÇÃO DE DOCUMENTO (Cards Menores)
     if st.session_state.doc_selecionado is None:
         st.button("⬅️ Voltar ao Menu Principal", on_click=alterar_setor, args=(None,))
         st.write("---")
@@ -80,14 +99,35 @@ elif st.session_state.setor_selecionado == "Projetos":
         with col3:
             st.button("✅ Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
             
-    # NÍVEL 2: FORMULÁRIO DO DOCUMENTO
-    else:
+    # NÍVEL 3 ESPECIAL: SUB-MENU DO TERMO DE FINALIZAÇÃO
+    elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
         st.write("---")
+        st.title("✅ Termo de Finalização")
+        st.write("Selecione o serviço correspondente:")
         
-        st.title(f"📄 Gerador - {st.session_state.doc_selecionado}")
+        # Cria duas colunas para distribuir os botões (cards) dos serviços
+        col1, col2 = st.columns(2)
+        for i, servico in enumerate(LISTA_FINALIZACAO):
+            if i % 2 == 0:
+                col1.button(servico, on_click=alterar_servico_fin, args=(servico,), use_container_width=True)
+            else:
+                col2.button(servico, on_click=alterar_servico_fin, args=(servico,), use_container_width=True)
+
+    # NÍVEL 4: FORMULÁRIO DO DOCUMENTO
+    else:
+        # Botão de voltar dinâmico (Volta para os Serviços se for Finalização, senão volta pros Documentos)
+        if st.session_state.doc_selecionado == "Termo de Finalização":
+            st.button("⬅️ Voltar aos Serviços", on_click=alterar_servico_fin, args=(None,))
+            titulo = f"Finalização - {st.session_state.servico_finalizacao}"
+        else:
+            st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
+            titulo = st.session_state.doc_selecionado
+            
+        st.write("---")
+        st.title(f"📄 Gerador: {titulo}")
         
-        # 2. CAPTURA DOS DADOS DA URL (Com blindagem)
+        # DADOS DO NOTION (Comum a todos)
         query_params = st.query_params
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
@@ -108,34 +148,31 @@ elif st.session_state.setor_selecionado == "Projetos":
 
         st.write("---")
         
-        # Lógica Específica da Procuração
+        # LÓGICA DA PROCURAÇÃO
         if st.session_state.doc_selecionado == "Procuração":
             st.subheader("2. Seleção de Responsáveis (Outorgados)")
             responsaveis_selecionados = st.multiselect("Selecione os funcionários:", options=list(RESPONSAVEIS_DB.keys()), default=[])
-
             st.write("---")
-
             st.subheader("3. Escopo de Poderes (Serviços)")
             servicos_selecionados = st.multiselect("Selecione os serviços:", options=list(SERVICOS_DB.keys()), default=[])
-            
             url_modelo = URL_PROCURACAO
 
-        # Lógica do Distrato e Finalização
-        else:
+        # LÓGICA DO DISTRATO
+        elif st.session_state.doc_selecionado == "Termo de Distrato":
             st.subheader("2. Dados Adicionais")
             info_adicional = st.text_input("Número do Contrato ou Informação Adicional:")
-            if st.session_state.doc_selecionado == "Termo de Distrato":
-                url_modelo = URL_DISTRATO
-            else:
-                url_modelo = "" # O link da finalização será colocado aqui depois
-                
-        st.write("---")
+            url_modelo = URL_DISTRATO
+            
+        # LÓGICA DO TERMO DE FINALIZAÇÃO (Aguardando próxima etapa)
+        else:
+            st.info(f"💡 Você selecionou o Termo de Finalização para **{st.session_state.servico_finalizacao}**.")
+            st.warning("O botão de gerar PDF será ativado assim que configurarmos os novos modelos no código.")
+            url_modelo = ""
 
-        # 4. GERAÇÃO
-        if st.button(f"🚀 Gerar e Baixar {st.session_state.doc_selecionado}", type="primary"):
-            if st.session_state.doc_selecionado == "Termo de Finalização" and not url_modelo:
-                st.warning("⚠️ O link do modelo do Termo de Finalização ainda não foi configurado.")
-            else:
+        # GERAÇÃO DO PDF (Somente para Procuração e Distrato no momento)
+        if url_modelo:
+            st.write("---")
+            if st.button(f"🚀 Gerar e Baixar {st.session_state.doc_selecionado}", type="primary"):
                 with st.spinner("Processando..."):
                     try:
                         match = re.search(r'/document/d/([a-zA-Z0-9-_]+)', url_modelo)
@@ -145,7 +182,6 @@ elif st.session_state.setor_selecionado == "Projetos":
                         arquivo_base = "base_modelo.docx"
                         with open(arquivo_base, "wb") as f: f.write(response.content)
                         
-                        # Data sempre em PT-BR
                         meses_pt = {
                             "January": "janeiro", "February": "fevereiro", "March": "março", 
                             "April": "abril", "May": "maio", "June": "junho", 
@@ -156,7 +192,6 @@ elif st.session_state.setor_selecionado == "Projetos":
                         mes_nome = meses_pt[data_hoje.strftime("%B")]
                         data_formatada = f"{data_hoje.day} de {mes_nome} de {data_hoje.year}"
                         
-                        # Contexto Compartilhado
                         context = {
                             "empresa": empresa.upper(),
                             "cnpj": cnpj,
@@ -165,7 +200,6 @@ elif st.session_state.setor_selecionado == "Projetos":
                             "data": data_formatada
                         }
                         
-                        # Preenche contexto específico
                         if st.session_state.doc_selecionado == "Procuração":
                             if responsaveis_selecionados:
                                 lista_resp = [RESPONSAVEIS_DB[k]["nome"] + RESPONSAVEIS_DB[k]["info"] for k in responsaveis_selecionados]
