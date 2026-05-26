@@ -38,16 +38,20 @@ st.caption("Ecoverde Projetos e Consultoria Ambiental - Sistema Cloud")
 query_params = st.query_params
 url_empresa = query_params.get("empresa", "<<NOME DA EMPRESA>>")
 url_cnpj = query_params.get("cnpj", "<<CNPJ>>")
-url_endereco = query_params.get("endereco", "<<ENDEREÇO>>")
+url_endereco_contratante = query_params.get("endereco_contratante", "<<ENDEREÇO DO CONTRATANTE>>")
+url_endereco_obra = query_params.get("endereco_obra", "<<ENDEREÇO DA OBRA>>")
 
 st.subheader("1. Dados do Cliente e Processo")
+
+# Reorganizado para acomodar os dois endereços
 col1, col2 = st.columns(2)
 with col1:
     empresa = st.text_input("Cliente / Razão Social", value=url_empresa)
-    cnpj = st.text_input("CNPJ", value=url_cnpj)
-with col2:
-    endereco = st.text_input("Endereço do Contratante", value=url_endereco)
+    endereco_contratante = st.text_input("Endereço do Contratante (Sede)", value=url_endereco_contratante)
     cidade = st.text_input("Cidade do Processo (Prefeitura e Data)", value="Betim")
+with col2:
+    cnpj = st.text_input("CNPJ", value=url_cnpj)
+    endereco_obra = st.text_input("Endereço da Obra (Imóvel)", value=url_endereco_obra)
 
 st.write("---")
 
@@ -97,15 +101,12 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                 with open(arquivo_base, "wb") as f:
                     f.write(response.content)
                 
-                # --- CORREÇÃO: TEXTO NORMAL PARA OS RESPONSÁVEIS ---
-                # Como retiramos o RichText, a nuvem não vai mais apagar o texto e ele vai herdar a fonte Arial do Google Docs
                 if responsaveis_selecionados:
                     lista_resp = []
                     for func_key in responsaveis_selecionados:
                         dados = RESPONSAVEIS_DB[func_key]
                         lista_resp.append(dados["nome"] + dados["info"])
                     
-                    # Junta todo mundo e coloca o ponto final
                     texto_responsaveis = "e funcionários: " + "; ".join(lista_resp) + "."
                 else:
                     texto_responsaveis = "."
@@ -121,7 +122,8 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                 context = {
                     "empresa": empresa.upper(),
                     "cnpj": cnpj,
-                    "endereco": endereco,
+                    "endereco_contratante": endereco_contratante, # Variável 1
+                    "endereco_obra": endereco_obra,               # Variável 2
                     "cidade": cidade,
                     "responsaveis": texto_responsaveis,
                     "servicos": texto_servicos,
