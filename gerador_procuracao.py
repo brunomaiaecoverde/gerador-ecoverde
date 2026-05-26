@@ -1,5 +1,5 @@
 import streamlit as st
-from docxtpl import DocxTemplate, RichText
+from docxtpl import DocxTemplate
 import requests
 import re
 import subprocess
@@ -97,22 +97,18 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                 with open(arquivo_base, "wb") as f:
                     f.write(response.content)
                 
-                rt_responsaveis = RichText()
-                # Fonte ajustada para a nuvem: Arial tamanho 11 (22 meias-pontos)
-                font_padrao = {'font': 'Arial', 'size': 22}
-                
+                # --- CORREÇÃO: TEXTO NORMAL PARA OS RESPONSÁVEIS ---
+                # Como retiramos o RichText, a nuvem não vai mais apagar o texto e ele vai herdar a fonte Arial do Google Docs
                 if responsaveis_selecionados:
-                    # Retirei o espaço do início porque você vai dar o espaço no Google Docs
-                    rt_responsaveis.add("e funcionários: ", **font_padrao)
-                    for i, func_key in enumerate(responsaveis_selecionados):
+                    lista_resp = []
+                    for func_key in responsaveis_selecionados:
                         dados = RESPONSAVEIS_DB[func_key]
-                        rt_responsaveis.add(dados["nome"], bold=True, **font_padrao)
-                        rt_responsaveis.add(dados["info"], **font_padrao)
-                        if i < len(responsaveis_selecionados) - 1:
-                            rt_responsaveis.add("; ", **font_padrao)
-                    rt_responsaveis.add(".", **font_padrao)
+                        lista_resp.append(dados["nome"] + dados["info"])
+                    
+                    # Junta todo mundo e coloca o ponto final
+                    texto_responsaveis = "e funcionários: " + "; ".join(lista_resp) + "."
                 else:
-                    rt_responsaveis.add("", **font_padrao)
+                    texto_responsaveis = "."
                     
                 lista_servicos = [f"• {SERVICOS_DB[s].format(cidade=cidade)}" for s in servicos_selecionados]
                 lista_servicos.append("• Outras autarquias cabíveis ao município.")
@@ -127,7 +123,7 @@ if st.button("🚀 Gerar e Baixar Procuração em PDF", type="primary"):
                     "cnpj": cnpj,
                     "endereco": endereco,
                     "cidade": cidade,
-                    "responsaveis": rt_responsaveis,
+                    "responsaveis": texto_responsaveis,
                     "servicos": texto_servicos,
                     "data": texto_data
                 }
