@@ -10,20 +10,21 @@ import datetime
 URL_PROCURACAO = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/export?format=docx"
 URL_DISTRATO = "https://docs.google.com/document/d/1Tf6rRbCnBTBcWFr-pVDw7sBV0yZRqeqa/export?format=docx"
 
-# LINKS DOS MODELOS DE FINALIZAÇÃO (Já com a formatação para exportar DOCX direto)
+# LINKS DOS MODELOS DE FINALIZAÇÃO (Já formatados para exportar)
 URLS_FINALIZACAO = {
     "Elaboração de Projeto de Incêndio PTD": "https://docs.google.com/document/d/1QDRxw1oArg_OYIuQi0QoffXtTOEVfJZd/export?format=docx",
     "Elaboração de Projeto de Incêndio PT/PTS": "https://docs.google.com/document/d/19DCPbdC7HxDfQjTQwZgVmde8zyAjTUZv/export?format=docx",
     "Renovação de AVCB/CLCB": "https://docs.google.com/document/d/1U1nIgZqn6VEBVwgA9YDlPjKPPAmsbjtz/export?format=docx",
     "Atualização do Projeto de Incêndio": "https://docs.google.com/document/d/1wmcAzHPfL0rHLJorli13Jg2OyOgcBa7q/export?format=docx",
-    "Dispensa de AVCB": "https://docs.google.com/document/d/1f9EkVZWkM0chIZtHJcACknnwXPyd9vGo/export?format=docx"
+    "Dispensa de AVCB": "https://docs.google.com/document/d/1f9EkVZWkM0chIZtHJcACknnwXPyd9vGo/export?format=docx",
+    "Relatório de Impacto na Circulação": "https://docs.google.com/document/d/1Ze-Sa_7qjmMIzeiOOFI5FaWAIOLgjK4V/export?format=docx"
 }
 
-# BASE DE DADOS
+# 1. BASE DE DADOS INTEGRADA (Com cargos atualizados)
 RESPONSAVEIS_DB = {
     "Gabriela Freitas": {"nome": "Gabriela Ferreira de Freitas", "info": ", brasileira, solteira, líder de projetos júnior 2, CPF 121.142.656-41"},
     "Shérida Silva": {"nome": "Shérida Patrícia Milanez Silva", "info": ", brasileira, casada, Analista de integração de projetos júnior, CPF 072.958.656-16"},
-    "Eduarda Ferreira": {"nome": "Eduarda Pimenta Ferreira", "info": ", brasileira, solteira, desenhista projetista I, CPF 703.540.986-67"},
+    "Eduarda Ferreira": {"nome": "Eduarda Pimenta Ferreira", "info": ", brasileira, solteira, desenhista projetista 1, CPF 703.540.986-67"},
     "Caroline Monte Mor": {"nome": "Caroline Candido Oliveira Monte Mor", "info": ", brasileira, casada, desenhista projetista junior I, CPF 124.910.106-90"},
     "Maria Luiza Santos": {"nome": "Maria Luiza Cardozo Estevão dos Santos", "info": ", brasileira, solteira, desenhista projetista 3, CPF 144.200.216-67"},
     "Bruno Maia": {"nome": "Bruno Maia", "info": ", brasileiro, solteiro, estagiário de projetos viários, CPF: 142.172.726-93"},
@@ -38,19 +39,19 @@ SERVICOS_DB = {
     "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante ao órgão competente;"
 }
 
-# LISTA DE SERVIÇOS PARA O TERMO DE FINALIZAÇÃO
+# LISTA REORDENADA (Ativos primeiro)
 LISTA_FINALIZACAO = [
     "Elaboração de Projeto de Incêndio PTD",
     "Elaboração de Projeto de Incêndio PT/PTS",
     "Renovação de AVCB/CLCB",
     "Atualização do Projeto de Incêndio",
+    "Dispensa de AVCB",
+    "Relatório de Impacto na Circulação",
     "Elaboração de Projeto de Combate a Incêndio",
     "Projeto Arquitetônico",
     "Treinamento de Brigada",
     "Vigilância Sanitária",
-    "Relatório de Impacto na Circulação",
-    "Estudo de Impacto na Vizinhança",
-    "Dispensa de AVCB" # Adicionado o novo card aqui
+    "Estudo de Impacto na Vizinhança"
 ]
 
 st.set_page_config(page_title="Sistema Ecoverde", page_icon="📄", layout="centered")
@@ -106,7 +107,7 @@ elif st.session_state.setor_selecionado == "Projetos":
         with col3:
             st.button("✅ Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
             
-    # SUB-MENU DO TERMO DE FINALIZAÇÃO
+    # SUB-MENU DO TERMO DE FINALIZAÇÃO (Com coloração inteligente)
     elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
         st.write("---")
@@ -115,12 +116,16 @@ elif st.session_state.setor_selecionado == "Projetos":
         
         col1, col2 = st.columns(2)
         for i, servico in enumerate(LISTA_FINALIZACAO):
+            # Define a cor do botão: "primary" (destaque) se configurado, "secondary" (cinza) se não.
+            tipo_botao = "primary" if servico in URLS_FINALIZACAO else "secondary"
+            icone = "✔️" if servico in URLS_FINALIZACAO else "🚧"
+            
             if i % 2 == 0:
-                col1.button(servico, on_click=alterar_servico_fin, args=(servico,), use_container_width=True)
+                col1.button(f"{icone} {servico}", on_click=alterar_servico_fin, args=(servico,), use_container_width=True, type=tipo_botao)
             else:
-                col2.button(servico, on_click=alterar_servico_fin, args=(servico,), use_container_width=True)
+                col2.button(f"{icone} {servico}", on_click=alterar_servico_fin, args=(servico,), use_container_width=True, type=tipo_botao)
 
-    # FORMULÁRIO DO DOCUMENTO (Procuração, Distrato ou Finalização Específica)
+    # FORMULÁRIO DO DOCUMENTO
     else:
         if st.session_state.doc_selecionado == "Termo de Finalização":
             st.button("⬅️ Voltar aos Serviços", on_click=alterar_servico_fin, args=(None,))
@@ -154,6 +159,9 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.write("---")
         
         # LÓGICA POR DOCUMENTO
+        parecer_ric = ""
+        info_adicional = ""
+        
         if st.session_state.doc_selecionado == "Procuração":
             st.subheader("2. Seleção de Responsáveis (Outorgados)")
             responsaveis_selecionados = st.multiselect("Selecione os funcionários:", options=list(RESPONSAVEIS_DB.keys()), default=[])
@@ -169,10 +177,14 @@ elif st.session_state.setor_selecionado == "Projetos":
             
         else: # Termo de Finalização
             servico = st.session_state.servico_finalizacao
-            # Verifica se o serviço clicado já tem link configurado
             if servico in URLS_FINALIZACAO:
                 st.success("✅ O modelo para este serviço está configurado e pronto para geração!")
                 url_modelo = URLS_FINALIZACAO[servico]
+                
+                # Exibe campo adicional APENAS se for RIC
+                if servico == "Relatório de Impacto na Circulação":
+                    st.subheader("2. Dados Específicos do Serviço")
+                    parecer_ric = st.text_input("Número do Parecer (Manual):")
             else:
                 st.warning("⚠️ O modelo para este serviço ainda não foi configurado.")
                 url_modelo = ""
@@ -218,8 +230,13 @@ elif st.session_state.setor_selecionado == "Projetos":
                             lista_servicos = [f"• {SERVICOS_DB[s]}" for s in servicos_selecionados]
                             lista_servicos.append("• Outras autarquias cabíveis ao município.")
                             context["servicos"] = "\n".join(lista_servicos)
+                            
                         elif st.session_state.doc_selecionado == "Termo de Distrato":
                             context["info_adicional"] = info_adicional
+                            
+                        elif st.session_state.doc_selecionado == "Termo de Finalização":
+                            if st.session_state.servico_finalizacao == "Relatório de Impacto na Circulação":
+                                context["parecer"] = parecer_ric
 
                         doc = DocxTemplate(arquivo_base)
                         doc.render(context)
