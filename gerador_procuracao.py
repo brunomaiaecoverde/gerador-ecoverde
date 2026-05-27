@@ -6,15 +6,24 @@ import subprocess
 import os
 import datetime
 
-# LINKS DOS MODELOS (Google Docs)
+# LINKS DOS MODELOS GERAIS
 URL_PROCURACAO = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/export?format=docx"
 URL_DISTRATO = "https://docs.google.com/document/d/1Tf6rRbCnBTBcWFr-pVDw7sBV0yZRqeqa/export?format=docx"
 
-# 1. BASE DE DADOS INTEGRADA
+# LINKS DOS MODELOS DE FINALIZAÇÃO (Já com a formatação para exportar DOCX direto)
+URLS_FINALIZACAO = {
+    "Elaboração de Projeto de Incêndio PTD": "https://docs.google.com/document/d/1QDRxw1oArg_OYIuQi0QoffXtTOEVfJZd/export?format=docx",
+    "Elaboração de Projeto de Incêndio PT/PTS": "https://docs.google.com/document/d/19DCPbdC7HxDfQjTQwZgVmde8zyAjTUZv/export?format=docx",
+    "Renovação de AVCB/CLCB": "https://docs.google.com/document/d/1U1nIgZqn6VEBVwgA9YDlPjKPPAmsbjtz/export?format=docx",
+    "Atualização do Projeto de Incêndio": "https://docs.google.com/document/d/1wmcAzHPfL0rHLJorli13Jg2OyOgcBa7q/export?format=docx",
+    "Dispensa de AVCB": "https://docs.google.com/document/d/1f9EkVZWkM0chIZtHJcACknnwXPyd9vGo/export?format=docx"
+}
+
+# BASE DE DADOS
 RESPONSAVEIS_DB = {
     "Gabriela Freitas": {"nome": "Gabriela Ferreira de Freitas", "info": ", brasileira, solteira, líder de projetos júnior 2, CPF 121.142.656-41"},
     "Shérida Silva": {"nome": "Shérida Patrícia Milanez Silva", "info": ", brasileira, casada, Analista de integração de projetos júnior, CPF 072.958.656-16"},
-    "Eduarda Ferreira": {"nome": "Eduarda Pimenta Ferreira", "info": ", brasileira, solteira, desenhista projetista 1, CPF 703.540.986-67"},
+    "Eduarda Ferreira": {"nome": "Eduarda Pimenta Ferreira", "info": ", brasileira, solteira, desenhista projetista I, CPF 703.540.986-67"},
     "Caroline Monte Mor": {"nome": "Caroline Candido Oliveira Monte Mor", "info": ", brasileira, casada, desenhista projetista junior I, CPF 124.910.106-90"},
     "Maria Luiza Santos": {"nome": "Maria Luiza Cardozo Estevão dos Santos", "info": ", brasileira, solteira, desenhista projetista 3, CPF 144.200.216-67"},
     "Bruno Maia": {"nome": "Bruno Maia", "info": ", brasileiro, solteiro, estagiário de projetos viários, CPF: 142.172.726-93"},
@@ -40,12 +49,13 @@ LISTA_FINALIZACAO = [
     "Treinamento de Brigada",
     "Vigilância Sanitária",
     "Relatório de Impacto na Circulação",
-    "Estudo de Impacto na Vizinhança"
+    "Estudo de Impacto na Vizinhança",
+    "Dispensa de AVCB" # Adicionado o novo card aqui
 ]
 
 st.set_page_config(page_title="Sistema Ecoverde", page_icon="📄", layout="centered")
 
-# --- CONTROLE DE NAVEGAÇÃO (MEMÓRIA DO SITE) ---
+# --- CONTROLE DE NAVEGAÇÃO ---
 if 'setor_selecionado' not in st.session_state:
     st.session_state.setor_selecionado = None
 if 'doc_selecionado' not in st.session_state:
@@ -65,18 +75,15 @@ def alterar_doc(nome_doc):
 def alterar_servico_fin(nome_servico):
     st.session_state.servico_finalizacao = nome_servico
 
-# --- NÍVEL 1: MENU DE CARDS GRANDES (SETORES) ---
+# --- NÍVEL 1: MENU DE SETORES ---
 if st.session_state.setor_selecionado is None:
     st.title("🏢 Sistema Central Ecoverde")
     st.write("Selecione um setor abaixo para iniciar:")
-    
     st.write("---")
-    
     col1, col2 = st.columns(2, gap="large")
     with col1:
         st.button("🏗️ PROJETOS", on_click=alterar_setor, args=("Projetos",), use_container_width=True, type="primary")
         st.button("🌱 MEIO AMBIENTE", on_click=alterar_setor, args=("Meio Ambiente",), use_container_width=True)
-        
     with col2:
         st.button("📊 GESTÃO AMBIENTAL", on_click=alterar_setor, args=("Gestão Ambiental",), use_container_width=True)
         st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True)
@@ -84,7 +91,7 @@ if st.session_state.setor_selecionado is None:
 # --- NÍVEL 2 E 3: SETOR DE PROJETOS ---
 elif st.session_state.setor_selecionado == "Projetos":
     
-    # NÍVEL 2: SELEÇÃO DE DOCUMENTO (Cards Menores)
+    # SELEÇÃO DE DOCUMENTO
     if st.session_state.doc_selecionado is None:
         st.button("⬅️ Voltar ao Menu Principal", on_click=alterar_setor, args=(None,))
         st.write("---")
@@ -99,14 +106,13 @@ elif st.session_state.setor_selecionado == "Projetos":
         with col3:
             st.button("✅ Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
             
-    # NÍVEL 3 ESPECIAL: SUB-MENU DO TERMO DE FINALIZAÇÃO
+    # SUB-MENU DO TERMO DE FINALIZAÇÃO
     elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
         st.write("---")
         st.title("✅ Termo de Finalização")
         st.write("Selecione o serviço correspondente:")
         
-        # Cria duas colunas para distribuir os botões (cards) dos serviços
         col1, col2 = st.columns(2)
         for i, servico in enumerate(LISTA_FINALIZACAO):
             if i % 2 == 0:
@@ -114,9 +120,8 @@ elif st.session_state.setor_selecionado == "Projetos":
             else:
                 col2.button(servico, on_click=alterar_servico_fin, args=(servico,), use_container_width=True)
 
-    # NÍVEL 4: FORMULÁRIO DO DOCUMENTO
+    # FORMULÁRIO DO DOCUMENTO (Procuração, Distrato ou Finalização Específica)
     else:
-        # Botão de voltar dinâmico (Volta para os Serviços se for Finalização, senão volta pros Documentos)
         if st.session_state.doc_selecionado == "Termo de Finalização":
             st.button("⬅️ Voltar aos Serviços", on_click=alterar_servico_fin, args=(None,))
             titulo = f"Finalização - {st.session_state.servico_finalizacao}"
@@ -127,7 +132,7 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.write("---")
         st.title(f"📄 Gerador: {titulo}")
         
-        # DADOS DO NOTION (Comum a todos)
+        # DADOS DO NOTION
         query_params = st.query_params
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
@@ -148,7 +153,7 @@ elif st.session_state.setor_selecionado == "Projetos":
 
         st.write("---")
         
-        # LÓGICA DA PROCURAÇÃO
+        # LÓGICA POR DOCUMENTO
         if st.session_state.doc_selecionado == "Procuração":
             st.subheader("2. Seleção de Responsáveis (Outorgados)")
             responsaveis_selecionados = st.multiselect("Selecione os funcionários:", options=list(RESPONSAVEIS_DB.keys()), default=[])
@@ -157,19 +162,22 @@ elif st.session_state.setor_selecionado == "Projetos":
             servicos_selecionados = st.multiselect("Selecione os serviços:", options=list(SERVICOS_DB.keys()), default=[])
             url_modelo = URL_PROCURACAO
 
-        # LÓGICA DO DISTRATO
         elif st.session_state.doc_selecionado == "Termo de Distrato":
             st.subheader("2. Dados Adicionais")
             info_adicional = st.text_input("Número do Contrato ou Informação Adicional:")
             url_modelo = URL_DISTRATO
             
-        # LÓGICA DO TERMO DE FINALIZAÇÃO (Aguardando próxima etapa)
-        else:
-            st.info(f"💡 Você selecionou o Termo de Finalização para **{st.session_state.servico_finalizacao}**.")
-            st.warning("O botão de gerar PDF será ativado assim que configurarmos os novos modelos no código.")
-            url_modelo = ""
+        else: # Termo de Finalização
+            servico = st.session_state.servico_finalizacao
+            # Verifica se o serviço clicado já tem link configurado
+            if servico in URLS_FINALIZACAO:
+                st.success("✅ O modelo para este serviço está configurado e pronto para geração!")
+                url_modelo = URLS_FINALIZACAO[servico]
+            else:
+                st.warning("⚠️ O modelo para este serviço ainda não foi configurado.")
+                url_modelo = ""
 
-        # GERAÇÃO DO PDF (Somente para Procuração e Distrato no momento)
+        # GERAÇÃO DO PDF
         if url_modelo:
             st.write("---")
             if st.button(f"🚀 Gerar e Baixar {st.session_state.doc_selecionado}", type="primary"):
@@ -210,7 +218,7 @@ elif st.session_state.setor_selecionado == "Projetos":
                             lista_servicos = [f"• {SERVICOS_DB[s]}" for s in servicos_selecionados]
                             lista_servicos.append("• Outras autarquias cabíveis ao município.")
                             context["servicos"] = "\n".join(lista_servicos)
-                        else:
+                        elif st.session_state.doc_selecionado == "Termo de Distrato":
                             context["info_adicional"] = info_adicional
 
                         doc = DocxTemplate(arquivo_base)
@@ -219,8 +227,12 @@ elif st.session_state.setor_selecionado == "Projetos":
                         
                         subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf", "temp.docx"], check=True)
                         
+                        nome_download = st.session_state.doc_selecionado.replace(' ', '_')
+                        if st.session_state.doc_selecionado == "Termo de Finalização":
+                            nome_download = f"Finalizacao_{st.session_state.servico_finalizacao.replace(' ', '_').replace('/', '')}"
+                            
                         with open("temp.pdf", "rb") as f:
-                            st.download_button("📄 Baixar PDF", f, file_name=f"{st.session_state.doc_selecionado.replace(' ', '_')}_{empresa.replace(' ', '_')}.pdf")
+                            st.download_button("📄 Baixar PDF", f, file_name=f"{nome_download}_{empresa.replace(' ', '_')}.pdf")
                                 
                     except Exception as e:
                         st.error(f"Erro: {e}")
