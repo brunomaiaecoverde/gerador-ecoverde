@@ -21,7 +21,8 @@ URLS_FINALIZACAO = {
     "Projeto Arquitetônico": "https://docs.google.com/document/d/1vXLtP-98b3f_e91P8tCD2_v9SkcvKmwb/export?format=docx",
     "Treinamento de Brigada": "https://docs.google.com/document/d/1B82adb22dP2EsDyBOLKPqqai6AVnxsph/export?format=docx",
     "Vigilância Sanitária": "https://docs.google.com/document/d/1aMR81_4HzPnFjwRQzquk0yNCs8EqViDL/export?format=docx",
-    "Projeto Viário": "https://docs.google.com/document/d/1l8Qr4I3FRDCfX9rO1QRePPtrzELdkYdu/export?format=docx"
+    "Projeto Viário": "https://docs.google.com/document/d/1l8Qr4I3FRDCfX9rO1QRePPtrzELdkYdu/export?format=docx",
+    "Termo de Finalização Geral": "https://docs.google.com/document/d/1RaPKBQlZdfimmlxarxMN_f2R5r7pqniS/export?format=docx"
 }
 
 # BASE DE DADOS INTEGRADA
@@ -55,7 +56,8 @@ LISTA_FINALIZACAO = [
     "Treinamento de Brigada",
     "Vigilância Sanitária",
     "Projeto Viário",
-    "Estudo de Impacto na Vizinhança" # Este é o único bloqueado agora
+    "Termo de Finalização Geral",
+    "Estudo de Impacto na Vizinhança" # Bloqueado
 ]
 
 st.set_page_config(page_title="Sistema Ecoverde", page_icon="📄", layout="centered")
@@ -130,11 +132,9 @@ elif st.session_state.setor_selecionado == "Projetos":
         
         col1, col2 = st.columns(2)
         for i, servico in enumerate(LISTA_FINALIZACAO):
-            # Verifica se o modelo já existe no código
             ativo = servico in URLS_FINALIZACAO
             texto_botao = f"{servico}" if ativo else f"🚧 {servico}"
             
-            # Se não estiver ativo, o botão fica disabled
             if i % 2 == 0:
                 col1.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo)
             else:
@@ -152,15 +152,22 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.write("---")
         st.title(f"📄 Gerador: {titulo}")
         
-        # DADOS DO NOTION
+        # DADOS DO NOTION COM PREENCHIMENTO MANUAL DA OBRA
         query_params = st.query_params
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
+        
+        # Limpa os placeholders caso venham vazios do Notion
         url_endereco_contratante = query_params.get("endereco_contratante", "")
+        if url_endereco_contratante == "<<ENDEREÇO DO CONTRATANTE>>":
+            url_endereco_contratante = ""
+            
         url_endereco_obra = query_params.get("endereco_obra", "")
+        if url_endereco_obra == "<<ENDEREÇO DA OBRA>>":
+            url_endereco_obra = ""
 
-        if not url_endereco_obra or url_endereco_obra == "<<ENDEREÇO DA OBRA>>":
-            url_endereco_obra = url_endereco_contratante
+        # Removemos a lógica que copiava o endereço automaticamente. 
+        # Agora o usuário precisará copiar e colar caso a obra esteja vazia.
 
         st.subheader("1. Dados do Cliente e Processo")
         col1, col2 = st.columns(2)
@@ -176,6 +183,7 @@ elif st.session_state.setor_selecionado == "Projetos":
         # LÓGICA POR DOCUMENTO
         numero_parecer = ""
         info_adicional = ""
+        docs_input = ""
         
         if st.session_state.doc_selecionado == "Procuração":
             st.subheader("2. Seleção de Responsáveis (Outorgados)")
@@ -196,10 +204,16 @@ elif st.session_state.setor_selecionado == "Projetos":
                 st.success("✅ O modelo para este serviço está configurado e pronto para geração!")
                 url_modelo = URLS_FINALIZACAO[servico]
                 
-                # Exibe campo adicional APENAS se for RIC ou VISA
+                # Exibe campo Parecer para RIC e VISA
                 if servico in ["Relatório de Impacto na Circulação", "Vigilância Sanitária"]:
                     st.subheader("2. Dados Específicos do Serviço")
                     numero_parecer = st.text_input("Número do Parecer (Manual):")
+                
+                # Exibe campo Documentos para o Termo Geral
+                elif servico == "Termo de Finalização Geral":
+                    st.subheader("2. Dados Específicos do Serviço")
+                    st.info("Digite um documento por linha. O sistema colocará os marcadores (•) automaticamente.")
+                    docs_input = st.text_area("Documentos Entregues:")
             else:
                 st.warning("⚠️ O modelo para este serviço ainda não foi configurado.")
                 url_modelo = ""
@@ -252,6 +266,13 @@ elif st.session_state.setor_selecionado == "Projetos":
                         elif st.session_state.doc_selecionado == "Termo de Finalização":
                             if st.session_state.servico_finalizacao in ["Relatório de Impacto na Circulação", "Vigilância Sanitária"]:
                                 context["parecer"] = numero_parecer
+                            elif st.session_state.servico_finalizacao == "Termo de Finalização Geral":
+                                if docs_input.strip():
+                                    # Pega cada linha digitada, remove espaços extras e adiciona a bolinha
+                                    linhas = [f"• {linha.strip()}" for linha in docs_input.split('\n') if linha.strip()]
+                                    context["documentos"] = "\n".join(linhas)
+                                else:
+                                    context["documentos"] = "Nenhum documento listado."
 
                         doc = DocxTemplate(arquivo_base)
                         doc.render(context)
