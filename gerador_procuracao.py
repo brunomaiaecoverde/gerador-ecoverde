@@ -20,7 +20,8 @@ URLS_FINALIZACAO = {
     "Relatório de Impacto na Circulação": "https://docs.google.com/document/d/1Ze-Sa_7qjmMIzeiOOFI5FaWAIOLgjK4V/export?format=docx",
     "Projeto Arquitetônico": "https://docs.google.com/document/d/1vXLtP-98b3f_e91P8tCD2_v9SkcvKmwb/export?format=docx",
     "Treinamento de Brigada": "https://docs.google.com/document/d/1B82adb22dP2EsDyBOLKPqqai6AVnxsph/export?format=docx",
-    "Vigilância Sanitária": "https://docs.google.com/document/d/1aMR81_4HzPnFjwRQzquk0yNCs8EqViDL/export?format=docx"
+    "Vigilância Sanitária": "https://docs.google.com/document/d/1aMR81_4HzPnFjwRQzquk0yNCs8EqViDL/export?format=docx",
+    "Projeto Viário": "https://docs.google.com/document/d/1l8Qr4I3FRDCfX9rO1QRePPtrzELdkYdu/export?format=docx"
 }
 
 # BASE DE DADOS INTEGRADA
@@ -53,6 +54,7 @@ LISTA_FINALIZACAO = [
     "Projeto Arquitetônico",
     "Treinamento de Brigada",
     "Vigilância Sanitária",
+    "Projeto Viário",
     "Estudo de Impacto na Vizinhança" # Este é o único bloqueado agora
 ]
 
@@ -132,7 +134,7 @@ elif st.session_state.setor_selecionado == "Projetos":
             ativo = servico in URLS_FINALIZACAO
             texto_botao = f"{servico}" if ativo else f"🚧 {servico}"
             
-            # Se não estiver ativo, o botão fica disabled (bloqueado, claro e não clicável)
+            # Se não estiver ativo, o botão fica disabled
             if i % 2 == 0:
                 col1.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo)
             else:
