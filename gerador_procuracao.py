@@ -22,6 +22,7 @@ URLS_FINALIZACAO = {
     "Treinamento de Brigada": "https://docs.google.com/document/d/1B82adb22dP2EsDyBOLKPqqai6AVnxsph/export?format=docx",
     "Vigilância Sanitária": "https://docs.google.com/document/d/1aMR81_4HzPnFjwRQzquk0yNCs8EqViDL/export?format=docx",
     "Projeto Viário": "https://docs.google.com/document/d/1l8Qr4I3FRDCfX9rO1QRePPtrzELdkYdu/export?format=docx",
+    "Estudo de Impacto na Vizinhança": "https://docs.google.com/document/d/1fvbQXNIHRkopUvALCkuna700ZJpsnqYb/export?format=docx",
     "Termo de Finalização Geral": "https://docs.google.com/document/d/1RaPKBQlZdfimmlxarxMN_f2R5r7pqniS/export?format=docx"
 }
 
@@ -44,7 +45,7 @@ SERVICOS_DB = {
     "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante ao órgão competente;"
 }
 
-# LISTA ATUALIZADA E REORDENADA
+# LISTA ATUALIZADA (Todos agora estão ativos)
 LISTA_FINALIZACAO = [
     "Elaboração de Projeto de Incêndio PTD",
     "Elaboração de Projeto de Incêndio PT/PTS",
@@ -56,8 +57,8 @@ LISTA_FINALIZACAO = [
     "Treinamento de Brigada",
     "Vigilância Sanitária",
     "Projeto Viário",
-    "Termo de Finalização Geral",
-    "Estudo de Impacto na Vizinhança" # Bloqueado
+    "Estudo de Impacto na Vizinhança",
+    "Termo de Finalização Geral"
 ]
 
 st.set_page_config(page_title="Sistema Ecoverde", page_icon="📄", layout="centered")
@@ -157,7 +158,6 @@ elif st.session_state.setor_selecionado == "Projetos":
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
         
-        # Limpa os placeholders caso venham vazios do Notion
         url_endereco_contratante = query_params.get("endereco_contratante", "")
         if url_endereco_contratante == "<<ENDEREÇO DO CONTRATANTE>>":
             url_endereco_contratante = ""
@@ -165,9 +165,6 @@ elif st.session_state.setor_selecionado == "Projetos":
         url_endereco_obra = query_params.get("endereco_obra", "")
         if url_endereco_obra == "<<ENDEREÇO DA OBRA>>":
             url_endereco_obra = ""
-
-        # Removemos a lógica que copiava o endereço automaticamente. 
-        # Agora o usuário precisará copiar e colar caso a obra esteja vazia.
 
         st.subheader("1. Dados do Cliente e Processo")
         col1, col2 = st.columns(2)
@@ -204,8 +201,8 @@ elif st.session_state.setor_selecionado == "Projetos":
                 st.success("✅ O modelo para este serviço está configurado e pronto para geração!")
                 url_modelo = URLS_FINALIZACAO[servico]
                 
-                # Exibe campo Parecer para RIC e VISA
-                if servico in ["Relatório de Impacto na Circulação", "Vigilância Sanitária"]:
+                # Exibe campo Parecer para RIC, VISA e EIV
+                if servico in ["Relatório de Impacto na Circulação", "Vigilância Sanitária", "Estudo de Impacto na Vizinhança"]:
                     st.subheader("2. Dados Específicos do Serviço")
                     numero_parecer = st.text_input("Número do Parecer (Manual):")
                 
@@ -264,11 +261,10 @@ elif st.session_state.setor_selecionado == "Projetos":
                             context["info_adicional"] = info_adicional
                             
                         elif st.session_state.doc_selecionado == "Termo de Finalização":
-                            if st.session_state.servico_finalizacao in ["Relatório de Impacto na Circulação", "Vigilância Sanitária"]:
+                            if st.session_state.servico_finalizacao in ["Relatório de Impacto na Circulação", "Vigilância Sanitária", "Estudo de Impacto na Vizinhança"]:
                                 context["parecer"] = numero_parecer
                             elif st.session_state.servico_finalizacao == "Termo de Finalização Geral":
                                 if docs_input.strip():
-                                    # Pega cada linha digitada, remove espaços extras e adiciona a bolinha
                                     linhas = [f"• {linha.strip()}" for linha in docs_input.split('\n') if linha.strip()]
                                     context["documentos"] = "\n".join(linhas)
                                 else:
