@@ -10,17 +10,20 @@ import datetime
 URL_PROCURACAO = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/export?format=docx"
 URL_DISTRATO = "https://docs.google.com/document/d/1Tf6rRbCnBTBcWFr-pVDw7sBV0yZRqeqa/export?format=docx"
 
-# LINKS DOS MODELOS DE FINALIZAÇÃO (Já formatados para exportar)
+# LINKS DOS MODELOS DE FINALIZAÇÃO
 URLS_FINALIZACAO = {
     "Elaboração de Projeto de Incêndio PTD": "https://docs.google.com/document/d/1QDRxw1oArg_OYIuQi0QoffXtTOEVfJZd/export?format=docx",
     "Elaboração de Projeto de Incêndio PT/PTS": "https://docs.google.com/document/d/19DCPbdC7HxDfQjTQwZgVmde8zyAjTUZv/export?format=docx",
     "Renovação de AVCB/CLCB": "https://docs.google.com/document/d/1U1nIgZqn6VEBVwgA9YDlPjKPPAmsbjtz/export?format=docx",
     "Atualização do Projeto de Incêndio": "https://docs.google.com/document/d/1wmcAzHPfL0rHLJorli13Jg2OyOgcBa7q/export?format=docx",
     "Dispensa de AVCB": "https://docs.google.com/document/d/1f9EkVZWkM0chIZtHJcACknnwXPyd9vGo/export?format=docx",
-    "Relatório de Impacto na Circulação": "https://docs.google.com/document/d/1Ze-Sa_7qjmMIzeiOOFI5FaWAIOLgjK4V/export?format=docx"
+    "Relatório de Impacto na Circulação": "https://docs.google.com/document/d/1Ze-Sa_7qjmMIzeiOOFI5FaWAIOLgjK4V/export?format=docx",
+    "Projeto Arquitetônico": "https://docs.google.com/document/d/1vXLtP-98b3f_e91P8tCD2_v9SkcvKmwb/export?format=docx",
+    "Treinamento de Brigada": "https://docs.google.com/document/d/1B82adb22dP2EsDyBOLKPqqai6AVnxsph/export?format=docx",
+    "Vigilância Sanitária": "https://docs.google.com/document/d/1aMR81_4HzPnFjwRQzquk0yNCs8EqViDL/export?format=docx"
 }
 
-# 1. BASE DE DADOS INTEGRADA (Com cargos atualizados)
+# BASE DE DADOS INTEGRADA
 RESPONSAVEIS_DB = {
     "Gabriela Freitas": {"nome": "Gabriela Ferreira de Freitas", "info": ", brasileira, solteira, líder de projetos júnior 2, CPF 121.142.656-41"},
     "Shérida Silva": {"nome": "Shérida Patrícia Milanez Silva", "info": ", brasileira, casada, Analista de integração de projetos júnior, CPF 072.958.656-16"},
@@ -39,7 +42,7 @@ SERVICOS_DB = {
     "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante ao órgão competente;"
 }
 
-# LISTA REORDENADA (Ativos primeiro)
+# LISTA ATUALIZADA E REORDENADA
 LISTA_FINALIZACAO = [
     "Elaboração de Projeto de Incêndio PTD",
     "Elaboração de Projeto de Incêndio PT/PTS",
@@ -47,14 +50,23 @@ LISTA_FINALIZACAO = [
     "Atualização do Projeto de Incêndio",
     "Dispensa de AVCB",
     "Relatório de Impacto na Circulação",
-    "Elaboração de Projeto de Combate a Incêndio",
     "Projeto Arquitetônico",
     "Treinamento de Brigada",
     "Vigilância Sanitária",
-    "Estudo de Impacto na Vizinhança"
+    "Estudo de Impacto na Vizinhança" # Este é o único bloqueado agora
 ]
 
 st.set_page_config(page_title="Sistema Ecoverde", page_icon="📄", layout="centered")
+
+# --- CSS PARA ALINHAR O TEXTO DOS BOTÕES À ESQUERDA ---
+st.markdown("""
+    <style>
+    div.stButton > button {
+        text-align: left !important;
+        justify-content: flex-start !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- CONTROLE DE NAVEGAÇÃO ---
 if 'setor_selecionado' not in st.session_state:
@@ -103,11 +115,11 @@ elif st.session_state.setor_selecionado == "Projetos":
         with col1:
             st.button("📄 Procuração", on_click=alterar_doc, args=("Procuração",), use_container_width=True)
         with col2:
-            st.button("❌ Termo de Distrato", on_click=alterar_doc, args=("Termo de Distrato",), use_container_width=True)
+            st.button("📄 Termo de Distrato", on_click=alterar_doc, args=("Termo de Distrato",), use_container_width=True)
         with col3:
-            st.button("✅ Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
+            st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
             
-    # SUB-MENU DO TERMO DE FINALIZAÇÃO (Com coloração inteligente)
+    # SUB-MENU DO TERMO DE FINALIZAÇÃO
     elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
         st.write("---")
@@ -116,14 +128,15 @@ elif st.session_state.setor_selecionado == "Projetos":
         
         col1, col2 = st.columns(2)
         for i, servico in enumerate(LISTA_FINALIZACAO):
-            # Define a cor do botão: "primary" (destaque) se configurado, "secondary" (cinza) se não.
-            tipo_botao = "primary" if servico in URLS_FINALIZACAO else "secondary"
-            icone = "✔️" if servico in URLS_FINALIZACAO else "🚧"
+            # Verifica se o modelo já existe no código
+            ativo = servico in URLS_FINALIZACAO
+            texto_botao = f"{servico}" if ativo else f"🚧 {servico}"
             
+            # Se não estiver ativo, o botão fica disabled (bloqueado, claro e não clicável)
             if i % 2 == 0:
-                col1.button(f"{icone} {servico}", on_click=alterar_servico_fin, args=(servico,), use_container_width=True, type=tipo_botao)
+                col1.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo)
             else:
-                col2.button(f"{icone} {servico}", on_click=alterar_servico_fin, args=(servico,), use_container_width=True, type=tipo_botao)
+                col2.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo)
 
     # FORMULÁRIO DO DOCUMENTO
     else:
@@ -159,7 +172,7 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.write("---")
         
         # LÓGICA POR DOCUMENTO
-        parecer_ric = ""
+        numero_parecer = ""
         info_adicional = ""
         
         if st.session_state.doc_selecionado == "Procuração":
@@ -181,10 +194,10 @@ elif st.session_state.setor_selecionado == "Projetos":
                 st.success("✅ O modelo para este serviço está configurado e pronto para geração!")
                 url_modelo = URLS_FINALIZACAO[servico]
                 
-                # Exibe campo adicional APENAS se for RIC
-                if servico == "Relatório de Impacto na Circulação":
+                # Exibe campo adicional APENAS se for RIC ou VISA
+                if servico in ["Relatório de Impacto na Circulação", "Vigilância Sanitária"]:
                     st.subheader("2. Dados Específicos do Serviço")
-                    parecer_ric = st.text_input("Número do Parecer (Manual):")
+                    numero_parecer = st.text_input("Número do Parecer (Manual):")
             else:
                 st.warning("⚠️ O modelo para este serviço ainda não foi configurado.")
                 url_modelo = ""
@@ -235,8 +248,8 @@ elif st.session_state.setor_selecionado == "Projetos":
                             context["info_adicional"] = info_adicional
                             
                         elif st.session_state.doc_selecionado == "Termo de Finalização":
-                            if st.session_state.servico_finalizacao == "Relatório de Impacto na Circulação":
-                                context["parecer"] = parecer_ric
+                            if st.session_state.servico_finalizacao in ["Relatório de Impacto na Circulação", "Vigilância Sanitária"]:
+                                context["parecer"] = numero_parecer
 
                         doc = DocxTemplate(arquivo_base)
                         doc.render(context)
