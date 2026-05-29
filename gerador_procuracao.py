@@ -45,7 +45,7 @@ SERVICOS_DB = {
     "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante ao órgão competente;"
 }
 
-# LISTA ATUALIZADA (Todos agora estão ativos)
+# LISTA ATUALIZADA
 LISTA_FINALIZACAO = [
     "Elaboração de Projeto de Incêndio PTD",
     "Elaboração de Projeto de Incêndio PT/PTS",
@@ -181,6 +181,7 @@ elif st.session_state.setor_selecionado == "Projetos":
         numero_parecer = ""
         info_adicional = ""
         docs_input = ""
+        outros_info = ""
         
         if st.session_state.doc_selecionado == "Procuração":
             st.subheader("2. Seleção de Responsáveis (Outorgados)")
@@ -201,14 +202,17 @@ elif st.session_state.setor_selecionado == "Projetos":
                 st.success("✅ O modelo para este serviço está configurado e pronto para geração!")
                 url_modelo = URLS_FINALIZACAO[servico]
                 
+                st.subheader("2. Dados Específicos do Serviço")
+                
+                # Campo "Outros" comum a TODOS os Termos de Finalização
+                outros_info = st.text_input("Outros (Informações adicionais opcionais):")
+                
                 # Exibe campo Parecer para RIC, VISA e EIV
                 if servico in ["Relatório de Impacto na Circulação", "Vigilância Sanitária", "Estudo de Impacto na Vizinhança"]:
-                    st.subheader("2. Dados Específicos do Serviço")
                     numero_parecer = st.text_input("Número do Parecer (Manual):")
                 
                 # Exibe campo Documentos para o Termo Geral
                 elif servico == "Termo de Finalização Geral":
-                    st.subheader("2. Dados Específicos do Serviço")
                     st.info("Digite um documento por linha. O sistema colocará os marcadores (•) automaticamente.")
                     docs_input = st.text_area("Documentos Entregues:")
             else:
@@ -261,6 +265,8 @@ elif st.session_state.setor_selecionado == "Projetos":
                             context["info_adicional"] = info_adicional
                             
                         elif st.session_state.doc_selecionado == "Termo de Finalização":
+                            context["outros"] = outros_info  # Adiciona a tag {{ outros }} no contexto
+                            
                             if st.session_state.servico_finalizacao in ["Relatório de Impacto na Circulação", "Vigilância Sanitária", "Estudo de Impacto na Vizinhança"]:
                                 context["parecer"] = numero_parecer
                             elif st.session_state.servico_finalizacao == "Termo de Finalização Geral":
