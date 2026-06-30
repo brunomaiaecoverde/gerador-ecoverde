@@ -109,7 +109,7 @@ if st.session_state.setor_selecionado is None:
         st.button("🌱 MEIO AMBIENTE", on_click=alterar_setor, args=("Meio Ambiente",), use_container_width=True)
     with col2:
         st.button("📊 GESTÃO AMBIENTAL", on_click=alterar_setor, args=("Gestão Ambiental",), use_container_width=True)
-        st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True, type="primary") # Desbloqueado!
+        st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True, type="primary")
 
 # ==========================================
 # --- NÍVEL 2 E 3: SETOR DE PROJETOS ---
@@ -248,9 +248,11 @@ elif st.session_state.setor_selecionado == "Projetos":
                                 context["responsaveis"] = "e funcionários: " + "; ".join(lista_resp) + "."
                             else:
                                 context["responsaveis"] = "."
+                            
+                            # Correção principal: O \n virou \a para manter o espaçamento do parágrafo
                             lista_servicos = [f"• {SERVICOS_DB[s]}" for s in servicos_selecionados]
                             lista_servicos.append("• Outras autarquias cabíveis ao município.")
-                            context["servicos"] = "\n".join(lista_servicos)
+                            context["servicos"] = "\a".join(lista_servicos)
                             
                         elif st.session_state.doc_selecionado == "Termo de Distrato":
                             context["info_adicional"] = info_adicional
@@ -261,8 +263,9 @@ elif st.session_state.setor_selecionado == "Projetos":
                                 context["parecer"] = numero_parecer
                             elif st.session_state.servico_finalizacao == "Termo de Finalização Geral":
                                 if docs_input.strip():
+                                    # O \n do input vira \a para o Word respeitar o espaçamento
                                     linhas = [f"• {linha.strip()}" for linha in docs_input.split('\n') if linha.strip()]
-                                    context["documentos"] = "\n".join(linhas)
+                                    context["documentos"] = "\a".join(linhas)
                                 else:
                                     context["documentos"] = "Nenhum documento listado."
 
