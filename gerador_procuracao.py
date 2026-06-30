@@ -10,7 +10,7 @@ import datetime
 URL_PROCURACAO = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/export?format=docx"
 URL_DISTRATO = "https://docs.google.com/document/d/1Tf6rRbCnBTBcWFr-pVDw7sBV0yZRqeqa/export?format=docx"
 
-# LINKS DOS MODELOS DE FINALIZAÇÃO
+# LINKS DOS MODELOS DE FINALIZAÇÃO (PROJETOS)
 URLS_FINALIZACAO = {
     "Elaboração de Projeto de Incêndio PTD": "https://docs.google.com/document/d/1QDRxw1oArg_OYIuQi0QoffXtTOEVfJZd/export?format=docx",
     "Elaboração de Projeto de Incêndio PT/PTS": "https://docs.google.com/document/d/19DCPbdC7HxDfQjTQwZgVmde8zyAjTUZv/export?format=docx",
@@ -24,6 +24,12 @@ URLS_FINALIZACAO = {
     "Projeto Viário": "https://docs.google.com/document/d/1l8Qr4I3FRDCfX9rO1QRePPtrzELdkYdu/export?format=docx",
     "Estudo de Impacto na Vizinhança": "https://docs.google.com/document/d/1fvbQXNIHRkopUvALCkuna700ZJpsnqYb/export?format=docx",
     "Termo de Finalização Geral": "https://docs.google.com/document/d/1RaPKBQlZdfimmlxarxMN_f2R5r7pqniS/export?format=docx"
+}
+
+# LINKS DOS MODELOS DE FINALIZAÇÃO (EXECUÇÃO)
+URLS_EXEC_FINALIZACAO = {
+    "AVCB": "https://docs.google.com/document/d/1c0YDO8xQ8Ih_LLggerGKFD2L0d2S88Pu8c6SjvyV6u8/export?format=docx",
+    "CLCB": "https://docs.google.com/document/d/11z3Kq4dUSJy5ZSVjmQEpXFuzUR3rhd0E7ac4phg4rQs/export?format=docx"
 }
 
 # BASE DE DADOS INTEGRADA
@@ -45,7 +51,6 @@ SERVICOS_DB = {
     "Projeto Viário": "Elaboração e aprovação de Projeto Viário, perante ao órgão competente;"
 }
 
-# LISTA ATUALIZADA
 LISTA_FINALIZACAO = [
     "Elaboração de Projeto de Incêndio PTD",
     "Elaboração de Projeto de Incêndio PT/PTS",
@@ -104,12 +109,13 @@ if st.session_state.setor_selecionado is None:
         st.button("🌱 MEIO AMBIENTE", on_click=alterar_setor, args=("Meio Ambiente",), use_container_width=True)
     with col2:
         st.button("📊 GESTÃO AMBIENTAL", on_click=alterar_setor, args=("Gestão Ambiental",), use_container_width=True)
-        st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True)
+        st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True, type="primary") # Desbloqueado!
 
+# ==========================================
 # --- NÍVEL 2 E 3: SETOR DE PROJETOS ---
+# ==========================================
 elif st.session_state.setor_selecionado == "Projetos":
     
-    # SELEÇÃO DE DOCUMENTO
     if st.session_state.doc_selecionado is None:
         st.button("⬅️ Voltar ao Menu Principal", on_click=alterar_setor, args=(None,))
         st.write("---")
@@ -124,7 +130,6 @@ elif st.session_state.setor_selecionado == "Projetos":
         with col3:
             st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
             
-    # SUB-MENU DO TERMO DE FINALIZAÇÃO
     elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
         st.write("---")
@@ -141,7 +146,6 @@ elif st.session_state.setor_selecionado == "Projetos":
             else:
                 col2.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo)
 
-    # FORMULÁRIO DO DOCUMENTO
     else:
         if st.session_state.doc_selecionado == "Termo de Finalização":
             st.button("⬅️ Voltar aos Serviços", on_click=alterar_servico_fin, args=(None,))
@@ -153,18 +157,14 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.write("---")
         st.title(f"📄 Gerador: {titulo}")
         
-        # DADOS DO NOTION COM PREENCHIMENTO MANUAL DA OBRA
+        # DADOS DO NOTION
         query_params = st.query_params
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
-        
         url_endereco_contratante = query_params.get("endereco_contratante", "")
-        if url_endereco_contratante == "<<ENDEREÇO DO CONTRATANTE>>":
-            url_endereco_contratante = ""
-            
+        if url_endereco_contratante == "<<ENDEREÇO DO CONTRATANTE>>": url_endereco_contratante = ""
         url_endereco_obra = query_params.get("endereco_obra", "")
-        if url_endereco_obra == "<<ENDEREÇO DA OBRA>>":
-            url_endereco_obra = ""
+        if url_endereco_obra == "<<ENDEREÇO DA OBRA>>": url_endereco_obra = ""
 
         st.subheader("1. Dados do Cliente e Processo")
         col1, col2 = st.columns(2)
@@ -176,8 +176,6 @@ elif st.session_state.setor_selecionado == "Projetos":
             endereco_obra = st.text_input("Endereço da Obra (Imóvel)", value=url_endereco_obra)
 
         st.write("---")
-        
-        # LÓGICA POR DOCUMENTO
         numero_parecer = ""
         info_adicional = ""
         docs_input = ""
@@ -203,15 +201,11 @@ elif st.session_state.setor_selecionado == "Projetos":
                 url_modelo = URLS_FINALIZACAO[servico]
                 
                 st.subheader("2. Dados Específicos do Serviço")
-                
-                # Campo "Outros" comum a TODOS os Termos de Finalização
                 outros_info = st.text_input("Outros (Informações adicionais opcionais):")
                 
-                # Exibe campo Parecer para RIC, VISA e EIV
                 if servico in ["Relatório de Impacto na Circulação", "Vigilância Sanitária", "Estudo de Impacto na Vizinhança"]:
                     numero_parecer = st.text_input("Número do Parecer (Manual):")
                 
-                # Exibe campo Documentos para o Termo Geral
                 elif servico == "Termo de Finalização Geral":
                     st.info("Digite um documento por linha. O sistema colocará os marcadores (•) automaticamente.")
                     docs_input = st.text_area("Documentos Entregues:")
@@ -219,7 +213,7 @@ elif st.session_state.setor_selecionado == "Projetos":
                 st.warning("⚠️ O modelo para este serviço ainda não foi configurado.")
                 url_modelo = ""
 
-        # GERAÇÃO DO PDF
+        # GERAÇÃO DO PDF - PROJETOS
         if url_modelo:
             st.write("---")
             if st.button(f"🚀 Gerar e Baixar {st.session_state.doc_selecionado}", type="primary"):
@@ -243,11 +237,9 @@ elif st.session_state.setor_selecionado == "Projetos":
                         data_formatada = f"{data_hoje.day} de {mes_nome} de {data_hoje.year}"
                         
                         context = {
-                            "empresa": empresa.upper(),
-                            "cnpj": cnpj,
+                            "empresa": empresa.upper(), "cnpj": cnpj,
                             "endereco_contratante": endereco_contratante,
-                            "endereco_obra": endereco_obra,
-                            "data": data_formatada
+                            "endereco_obra": endereco_obra, "data": data_formatada
                         }
                         
                         if st.session_state.doc_selecionado == "Procuração":
@@ -256,7 +248,6 @@ elif st.session_state.setor_selecionado == "Projetos":
                                 context["responsaveis"] = "e funcionários: " + "; ".join(lista_resp) + "."
                             else:
                                 context["responsaveis"] = "."
-                                
                             lista_servicos = [f"• {SERVICOS_DB[s]}" for s in servicos_selecionados]
                             lista_servicos.append("• Outras autarquias cabíveis ao município.")
                             context["servicos"] = "\n".join(lista_servicos)
@@ -265,8 +256,7 @@ elif st.session_state.setor_selecionado == "Projetos":
                             context["info_adicional"] = info_adicional
                             
                         elif st.session_state.doc_selecionado == "Termo de Finalização":
-                            context["outros"] = outros_info  # Adiciona a tag {{ outros }} no contexto
-                            
+                            context["outros"] = outros_info
                             if st.session_state.servico_finalizacao in ["Relatório de Impacto na Circulação", "Vigilância Sanitária", "Estudo de Impacto na Vizinhança"]:
                                 context["parecer"] = numero_parecer
                             elif st.session_state.servico_finalizacao == "Termo de Finalização Geral":
@@ -279,12 +269,103 @@ elif st.session_state.setor_selecionado == "Projetos":
                         doc = DocxTemplate(arquivo_base)
                         doc.render(context)
                         doc.save("temp.docx")
-                        
                         subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf", "temp.docx"], check=True)
                         
                         nome_download = st.session_state.doc_selecionado.replace(' ', '_')
                         if st.session_state.doc_selecionado == "Termo de Finalização":
                             nome_download = f"Finalizacao_{st.session_state.servico_finalizacao.replace(' ', '_').replace('/', '')}"
+                            
+                        with open("temp.pdf", "rb") as f:
+                            st.download_button("📄 Baixar PDF", f, file_name=f"{nome_download}_{empresa.replace(' ', '_')}.pdf")
+                    except Exception as e:
+                        st.error(f"Erro: {e}")
+
+# ==========================================
+# --- NÍVEL 2 E 3: SETOR DE EXECUÇÃO ---
+# ==========================================
+elif st.session_state.setor_selecionado == "Execução":
+    
+    if st.session_state.doc_selecionado is None:
+        st.button("⬅️ Voltar ao Menu Principal", on_click=alterar_setor, args=(None,))
+        st.write("---")
+        st.title("👷 Setor de Execução")
+        st.write("Selecione o documento que deseja gerar:")
+        
+        st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
+            
+    elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
+        st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
+        st.write("---")
+        st.title("✅ Termo de Finalização")
+        st.write("Selecione o serviço correspondente:")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.button("AVCB", on_click=alterar_servico_fin, args=("AVCB",), use_container_width=True, type="primary")
+        with col2:
+            st.button("CLCB", on_click=alterar_servico_fin, args=("CLCB",), use_container_width=True, type="primary")
+
+    else:
+        st.button("⬅️ Voltar aos Serviços", on_click=alterar_servico_fin, args=(None,))
+        titulo = f"Finalização - {st.session_state.servico_finalizacao}"
+            
+        st.write("---")
+        st.title(f"📄 Gerador: {titulo}")
+        
+        # DADOS DO NOTION (Simplificado para a Execução)
+        query_params = st.query_params
+        url_empresa = query_params.get("empresa", "")
+        url_cnpj = query_params.get("cnpj", "")
+
+        st.subheader("1. Dados do Cliente")
+        col1, col2 = st.columns(2)
+        with col1:
+            empresa = st.text_input("Cliente / Razão Social", value=url_empresa)
+        with col2:
+            cnpj = st.text_input("CNPJ", value=url_cnpj)
+
+        st.write("---")
+        st.subheader("2. Dados Específicos do Serviço")
+        outros_info = st.text_input("Outros (Informações adicionais opcionais):")
+        
+        url_modelo = URLS_EXEC_FINALIZACAO.get(st.session_state.servico_finalizacao, "")
+        
+        if url_modelo:
+            st.write("---")
+            if st.button(f"🚀 Gerar e Baixar Termo", type="primary"):
+                with st.spinner("Processando..."):
+                    try:
+                        match = re.search(r'/document/d/([a-zA-Z0-9-_]+)', url_modelo)
+                        doc_id = match.group(1)
+                        response = requests.get(f"https://docs.google.com/document/d/{doc_id}/export?format=docx")
+                        
+                        arquivo_base = "base_modelo.docx"
+                        with open(arquivo_base, "wb") as f: f.write(response.content)
+                        
+                        meses_pt = {
+                            "January": "janeiro", "February": "fevereiro", "March": "março", 
+                            "April": "abril", "May": "maio", "June": "junho", 
+                            "July": "julho", "August": "agosto", "September": "setembro", 
+                            "October": "outubro", "November": "novembro", "December": "dezembro"
+                        }
+                        data_hoje = datetime.date.today()
+                        mes_nome = meses_pt[data_hoje.strftime("%B")]
+                        data_formatada = f"{data_hoje.day} de {mes_nome} de {data_hoje.year}"
+                        
+                        context = {
+                            "empresa": empresa.upper(),
+                            "cnpj": cnpj,
+                            "data": data_formatada,
+                            "outros": outros_info
+                        }
+
+                        doc = DocxTemplate(arquivo_base)
+                        doc.render(context)
+                        doc.save("temp.docx")
+                        
+                        subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf", "temp.docx"], check=True)
+                        
+                        nome_download = f"Finalizacao_Execucao_{st.session_state.servico_finalizacao.replace(' ', '_')}"
                             
                         with open("temp.pdf", "rb") as f:
                             st.download_button("📄 Baixar PDF", f, file_name=f"{nome_download}_{empresa.replace(' ', '_')}.pdf")
