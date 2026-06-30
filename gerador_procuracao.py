@@ -6,11 +6,12 @@ import subprocess
 import os
 import datetime
 
-# LINKS DOS MODELOS GERAIS
+# ==========================================
+# LINKS DOS MODELOS E BASES DE DADOS
+# ==========================================
 URL_PROCURACAO = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/export?format=docx"
 URL_DISTRATO = "https://docs.google.com/document/d/1Tf6rRbCnBTBcWFr-pVDw7sBV0yZRqeqa/export?format=docx"
 
-# LINKS DOS MODELOS DE FINALIZAÇÃO (PROJETOS)
 URLS_FINALIZACAO = {
     "Elaboração de Projeto de Incêndio PTD": "https://docs.google.com/document/d/1QDRxw1oArg_OYIuQi0QoffXtTOEVfJZd/export?format=docx",
     "Elaboração de Projeto de Incêndio PT/PTS": "https://docs.google.com/document/d/19DCPbdC7HxDfQjTQwZgVmde8zyAjTUZv/export?format=docx",
@@ -26,13 +27,11 @@ URLS_FINALIZACAO = {
     "Termo de Finalização Geral": "https://docs.google.com/document/d/1RaPKBQlZdfimmlxarxMN_f2R5r7pqniS/export?format=docx"
 }
 
-# LINKS DOS MODELOS DE FINALIZAÇÃO (EXECUÇÃO)
 URLS_EXEC_FINALIZACAO = {
     "AVCB": "https://docs.google.com/document/d/1c0YDO8xQ8Ih_LLggerGKFD2L0d2S88Pu8c6SjvyV6u8/export?format=docx",
     "CLCB": "https://docs.google.com/document/d/11z3Kq4dUSJy5ZSVjmQEpXFuzUR3rhd0E7ac4phg4rQs/export?format=docx"
 }
 
-# BASE DE DADOS INTEGRADA
 RESPONSAVEIS_DB = {
     "Gabriela Freitas": {"nome": "Gabriela Ferreira de Freitas", "info": ", brasileira, solteira, líder de projetos júnior 2, CPF 121.142.656-41"},
     "Shérida Silva": {"nome": "Shérida Patrícia Milanez Silva", "info": ", brasileira, casada, Analista de integração de projetos júnior, CPF 072.958.656-16"},
@@ -66,19 +65,11 @@ LISTA_FINALIZACAO = [
     "Termo de Finalização Geral"
 ]
 
-st.set_page_config(page_title="Sistema Ecoverde", page_icon="📄", layout="centered")
+st.set_page_config(page_title="Sistema Ecoverde", page_icon="🌱", layout="centered")
 
-# --- CSS PARA ALINHAR O TEXTO DOS BOTÕES À ESQUERDA ---
-st.markdown("""
-    <style>
-    div.stButton > button {
-        text-align: left !important;
-        justify-content: flex-start !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# --- CONTROLE DE NAVEGAÇÃO ---
+# ==========================================
+# CONTROLE DE NAVEGAÇÃO
+# ==========================================
 if 'setor_selecionado' not in st.session_state:
     st.session_state.setor_selecionado = None
 if 'doc_selecionado' not in st.session_state:
@@ -98,53 +89,122 @@ def alterar_doc(nome_doc):
 def alterar_servico_fin(nome_servico):
     st.session_state.servico_finalizacao = nome_servico
 
-# --- NÍVEL 1: MENU DE SETORES ---
+# ==========================================
+# ESTILO VISUAL DINÂMICO (ECOVERDE BRANDING)
+# ==========================================
 if st.session_state.setor_selecionado is None:
-    st.title("🏢 Sistema Central Ecoverde")
-    st.write("Selecione um setor abaixo para iniciar:")
-    st.write("---")
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        st.button("🏗️ PROJETOS", on_click=alterar_setor, args=("Projetos",), use_container_width=True, type="primary")
-        st.button("🌱 MEIO AMBIENTE", on_click=alterar_setor, args=("Meio Ambiente",), use_container_width=True)
-    with col2:
-        st.button("📊 GESTÃO AMBIENTAL", on_click=alterar_setor, args=("Gestão Ambiental",), use_container_width=True)
-        st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True, type="primary")
+    # ESTÉTICA DA TELA INICIAL (CARDS GRANDES)
+    st.markdown("""
+        <style>
+        /* Título Principal */
+        .title-eco { text-align: center; color: #2e7d32; font-weight: 800; font-size: 2.5rem; margin-bottom: 5px; }
+        .subtitle-eco { text-align: center; color: #555555; font-size: 1.1rem; margin-bottom: 40px; }
+        
+        /* Mega Cards - Metade da tela */
+        div.stButton > button {
+            height: 180px !important;
+            font-size: 22px !important;
+            font-weight: bold !important;
+            border-radius: 15px !important;
+            border: 2px solid #2e7d32 !important;
+            background-color: #ffffff !important;
+            color: #2e7d32 !important;
+            transition: all 0.3s ease-in-out !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        div.stButton > button:hover {
+            background-color: #2e7d32 !important;
+            color: #ffffff !important;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(46, 125, 50, 0.2);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+else:
+    # ESTÉTICA DAS TELAS INTERNAS (MENUS ALINHADOS E VERDE ECOVERDE)
+    st.markdown("""
+        <style>
+        /* Títulos Secundários */
+        .title-eco-sec { color: #2e7d32; font-weight: bold; }
+        
+        /* Botões alinhados à esquerda para navegação fácil */
+        div.stButton > button {
+            text-align: left !important;
+            justify-content: flex-start !important;
+            border-radius: 8px !important;
+            padding: 10px 15px !important;
+            transition: 0.2s;
+        }
+        
+        /* Botão Primário (Ativos/Ações) -> Verde Ecoverde */
+        div.stButton > button[kind="primary"] {
+            background-color: #2e7d32 !important;
+            color: white !important;
+            border: none !important;
+            font-weight: bold !important;
+        }
+        div.stButton > button[kind="primary"]:hover {
+            background-color: #1b5e20 !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Caixa de Mensagem Info */
+        div.stAlert { border-left-color: #2e7d32 !important; }
+        </style>
+    """, unsafe_allow_html=True)
 
 # ==========================================
-# --- NÍVEL 2 E 3: SETOR DE PROJETOS ---
+# NÍVEL 1: MENU DE SETORES (PÁGINA INICIAL)
+# ==========================================
+if st.session_state.setor_selecionado is None:
+    st.markdown("<div class='title-eco'>🌱 Ecoverde Consultoria</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle-eco'>Sistema Central de Automação de Documentos</div>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2, gap="large")
+    with col1:
+        st.button("🏗️ PROJETOS", on_click=alterar_setor, args=("Projetos",), use_container_width=True)
+        st.button("🍃 MEIO AMBIENTE", on_click=alterar_setor, args=("Meio Ambiente",), use_container_width=True)
+    with col2:
+        st.button("📊 GESTÃO AMBIENTAL", on_click=alterar_setor, args=("Gestão Ambiental",), use_container_width=True)
+        st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True)
+
+# ==========================================
+# NÍVEL 2 E 3: SETOR DE PROJETOS
 # ==========================================
 elif st.session_state.setor_selecionado == "Projetos":
     
     if st.session_state.doc_selecionado is None:
         st.button("⬅️ Voltar ao Menu Principal", on_click=alterar_setor, args=(None,))
         st.write("---")
-        st.title("🏗️ Setor de Projetos")
+        st.markdown("<h2 class='title-eco-sec'>🏗️ Setor de Projetos</h2>", unsafe_allow_html=True)
         st.write("Selecione o documento que deseja gerar:")
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.button("📄 Procuração", on_click=alterar_doc, args=("Procuração",), use_container_width=True)
+            st.button("📄 Procuração", on_click=alterar_doc, args=("Procuração",), use_container_width=True, type="primary")
         with col2:
-            st.button("📄 Termo de Distrato", on_click=alterar_doc, args=("Termo de Distrato",), use_container_width=True)
+            st.button("📄 Termo de Distrato", on_click=alterar_doc, args=("Termo de Distrato",), use_container_width=True, type="primary")
         with col3:
-            st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
+            st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True, type="primary")
             
     elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
         st.write("---")
-        st.title("✅ Termo de Finalização")
+        st.markdown("<h2 class='title-eco-sec'>✅ Termo de Finalização</h2>", unsafe_allow_html=True)
         st.write("Selecione o serviço correspondente:")
         
         col1, col2 = st.columns(2)
         for i, servico in enumerate(LISTA_FINALIZACAO):
             ativo = servico in URLS_FINALIZACAO
-            texto_botao = f"{servico}" if ativo else f"🚧 {servico}"
+            texto_botao = f"✔️ {servico}" if ativo else f"🚧 {servico}"
+            tipo = "primary" if ativo else "secondary"
             
             if i % 2 == 0:
-                col1.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo)
+                col1.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo, type=tipo)
             else:
-                col2.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo)
+                col2.button(texto_botao, on_click=alterar_servico_fin, args=(servico,), use_container_width=True, disabled=not ativo, type=tipo)
 
     else:
         if st.session_state.doc_selecionado == "Termo de Finalização":
@@ -155,9 +215,8 @@ elif st.session_state.setor_selecionado == "Projetos":
             titulo = st.session_state.doc_selecionado
             
         st.write("---")
-        st.title(f"📄 Gerador: {titulo}")
+        st.markdown(f"<h2 class='title-eco-sec'>📄 Gerador: {titulo}</h2>", unsafe_allow_html=True)
         
-        # DADOS DO NOTION
         query_params = st.query_params
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
@@ -194,10 +253,10 @@ elif st.session_state.setor_selecionado == "Projetos":
             info_adicional = st.text_input("Número do Contrato ou Informação Adicional:")
             url_modelo = URL_DISTRATO
             
-        else: # Termo de Finalização
+        else:
             servico = st.session_state.servico_finalizacao
             if servico in URLS_FINALIZACAO:
-                st.success("✅ O modelo para este serviço está configurado e pronto para geração!")
+                st.success("O modelo para este serviço está configurado e pronto para geração!")
                 url_modelo = URLS_FINALIZACAO[servico]
                 
                 st.subheader("2. Dados Específicos do Serviço")
@@ -213,11 +272,10 @@ elif st.session_state.setor_selecionado == "Projetos":
                 st.warning("⚠️ O modelo para este serviço ainda não foi configurado.")
                 url_modelo = ""
 
-        # GERAÇÃO DO PDF - PROJETOS
         if url_modelo:
             st.write("---")
             if st.button(f"🚀 Gerar e Baixar {st.session_state.doc_selecionado}", type="primary"):
-                with st.spinner("Processando..."):
+                with st.spinner("Processando documento..."):
                     try:
                         match = re.search(r'/document/d/([a-zA-Z0-9-_]+)', url_modelo)
                         doc_id = match.group(1)
@@ -249,7 +307,6 @@ elif st.session_state.setor_selecionado == "Projetos":
                             else:
                                 context["responsaveis"] = "."
                             
-                            # Correção principal: O \n virou \a para manter o espaçamento do parágrafo
                             lista_servicos = [f"• {SERVICOS_DB[s]}" for s in servicos_selecionados]
                             lista_servicos.append("• Outras autarquias cabíveis ao município.")
                             context["servicos"] = "\a".join(lista_servicos)
@@ -263,7 +320,6 @@ elif st.session_state.setor_selecionado == "Projetos":
                                 context["parecer"] = numero_parecer
                             elif st.session_state.servico_finalizacao == "Termo de Finalização Geral":
                                 if docs_input.strip():
-                                    # O \n do input vira \a para o Word respeitar o espaçamento
                                     linhas = [f"• {linha.strip()}" for linha in docs_input.split('\n') if linha.strip()]
                                     context["documentos"] = "\a".join(linhas)
                                 else:
@@ -279,43 +335,42 @@ elif st.session_state.setor_selecionado == "Projetos":
                             nome_download = f"Finalizacao_{st.session_state.servico_finalizacao.replace(' ', '_').replace('/', '')}"
                             
                         with open("temp.pdf", "rb") as f:
-                            st.download_button("📄 Baixar PDF", f, file_name=f"{nome_download}_{empresa.replace(' ', '_')}.pdf")
+                            st.download_button("📥 Baixar PDF", f, file_name=f"{nome_download}_{empresa.replace(' ', '_')}.pdf", type="primary")
                     except Exception as e:
-                        st.error(f"Erro: {e}")
+                        st.error(f"Erro ao processar arquivo: {e}")
 
 # ==========================================
-# --- NÍVEL 2 E 3: SETOR DE EXECUÇÃO ---
+# NÍVEL 2 E 3: SETOR DE EXECUÇÃO
 # ==========================================
 elif st.session_state.setor_selecionado == "Execução":
     
     if st.session_state.doc_selecionado is None:
         st.button("⬅️ Voltar ao Menu Principal", on_click=alterar_setor, args=(None,))
         st.write("---")
-        st.title("👷 Setor de Execução")
+        st.markdown("<h2 class='title-eco-sec'>👷 Setor de Execução</h2>", unsafe_allow_html=True)
         st.write("Selecione o documento que deseja gerar:")
         
-        st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True)
+        st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True, type="primary")
             
     elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
         st.write("---")
-        st.title("✅ Termo de Finalização")
+        st.markdown("<h2 class='title-eco-sec'>✅ Termo de Finalização</h2>", unsafe_allow_html=True)
         st.write("Selecione o serviço correspondente:")
         
         col1, col2 = st.columns(2)
         with col1:
-            st.button("AVCB", on_click=alterar_servico_fin, args=("AVCB",), use_container_width=True, type="primary")
+            st.button("✔️ AVCB", on_click=alterar_servico_fin, args=("AVCB",), use_container_width=True, type="primary")
         with col2:
-            st.button("CLCB", on_click=alterar_servico_fin, args=("CLCB",), use_container_width=True, type="primary")
+            st.button("✔️ CLCB", on_click=alterar_servico_fin, args=("CLCB",), use_container_width=True, type="primary")
 
     else:
         st.button("⬅️ Voltar aos Serviços", on_click=alterar_servico_fin, args=(None,))
         titulo = f"Finalização - {st.session_state.servico_finalizacao}"
             
         st.write("---")
-        st.title(f"📄 Gerador: {titulo}")
+        st.markdown(f"<h2 class='title-eco-sec'>📄 Gerador: {titulo}</h2>", unsafe_allow_html=True)
         
-        # DADOS DO NOTION (Simplificado para a Execução)
         query_params = st.query_params
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
@@ -336,7 +391,7 @@ elif st.session_state.setor_selecionado == "Execução":
         if url_modelo:
             st.write("---")
             if st.button(f"🚀 Gerar e Baixar Termo", type="primary"):
-                with st.spinner("Processando..."):
+                with st.spinner("Processando documento..."):
                     try:
                         match = re.search(r'/document/d/([a-zA-Z0-9-_]+)', url_modelo)
                         doc_id = match.group(1)
@@ -371,13 +426,26 @@ elif st.session_state.setor_selecionado == "Execução":
                         nome_download = f"Finalizacao_Execucao_{st.session_state.servico_finalizacao.replace(' ', '_')}"
                             
                         with open("temp.pdf", "rb") as f:
-                            st.download_button("📄 Baixar PDF", f, file_name=f"{nome_download}_{empresa.replace(' ', '_')}.pdf")
+                            st.download_button("📥 Baixar PDF", f, file_name=f"{nome_download}_{empresa.replace(' ', '_')}.pdf", type="primary")
                                 
                     except Exception as e:
-                        st.error(f"Erro: {e}")
+                        st.error(f"Erro ao processar arquivo: {e}")
 
-# --- OUTROS SETORES ---
+# ==========================================
+# OUTROS SETORES EM DESENVOLVIMENTO
+# ==========================================
 else:
     st.button("⬅️ Voltar ao Menu Principal", on_click=alterar_setor, args=(None,))
     st.write("---")
     st.info(f"O setor de {st.session_state.setor_selecionado} ainda está em desenvolvimento.")
+
+# ==========================================
+# RODAPÉ DO SISTEMA
+# ==========================================
+st.markdown("""
+    <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center;">
+        <span style="color: #9e9e9e; font-size: 13px; font-family: sans-serif;">
+            Criado por Bruno Maia
+        </span>
+    </div>
+""", unsafe_allow_html=True)
