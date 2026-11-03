@@ -170,7 +170,6 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.markdown("<h2 class='title-eco-sec'>🏗️ Setor de Projetos</h2>", unsafe_allow_html=True)
         st.write("Selecione o documento que deseja gerar:")
         
-        # Agora temos 4 botões, divididos em 4 colunas para manter o layout limpo
         col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.button("📄 Procuração", on_click=alterar_doc, args=("Procuração",), use_container_width=True, type="primary")
@@ -209,13 +208,22 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.write("---")
         st.markdown(f"<h2 class='title-eco-sec'>📄 Gerador: {titulo}</h2>", unsafe_allow_html=True)
         
+        # CAPTURA DE DADOS DO NOTION
         query_params = st.query_params
         url_empresa = query_params.get("empresa", "")
         url_cnpj = query_params.get("cnpj", "")
+        
         url_endereco_contratante = query_params.get("endereco_contratante", "")
         if url_endereco_contratante == "<<ENDEREÇO DO CONTRATANTE>>": url_endereco_contratante = ""
+        
         url_endereco_obra = query_params.get("endereco_obra", "")
         if url_endereco_obra == "<<ENDEREÇO DA OBRA>>": url_endereco_obra = ""
+        
+        url_responsavel = query_params.get("responsavel", "")
+        if url_responsavel == "<<RESPONSÁVEL>>": url_responsavel = ""
+        
+        url_telefone = query_params.get("telefone", "")
+        if url_telefone == "<<TELEFONE>>": url_telefone = ""
 
         st.subheader("1. Dados do Cliente e Processo")
         col1, col2 = st.columns(2)
@@ -228,14 +236,12 @@ elif st.session_state.setor_selecionado == "Projetos":
 
         st.write("---")
         
-        # Variáveis de controle gerais
         url_modelo = ""
         numero_parecer = ""
         info_adicional = ""
         docs_input = ""
         outros_info = ""
         
-        # Variáveis exclusivas da Brigada
         resp_brigada = ""
         tel_resp_brigada = ""
         data_treinamento = ""
@@ -243,7 +249,6 @@ elif st.session_state.setor_selecionado == "Projetos":
         num_participantes = 1
         participantes = []
         
-        # LOGICAS POR DOCUMENTO
         if st.session_state.doc_selecionado == "Procuração":
             st.subheader("2. Seleção de Responsáveis (Outorgados)")
             responsaveis_selecionados = st.multiselect("Selecione os funcionários:", options=list(RESPONSAVEIS_DB.keys()), default=[])
@@ -261,17 +266,16 @@ elif st.session_state.setor_selecionado == "Projetos":
             st.subheader("2. Informações do Treinamento")
             col_b1, col_b2 = st.columns(2)
             with col_b1:
-                resp_brigada = st.text_input("Responsável pelo Contato")
+                resp_brigada = st.text_input("Responsável pelo Contato", value=url_responsavel)
                 data_treinamento = st.text_input("Data do Treinamento", placeholder="Ex: 15 de novembro de 2026")
             with col_b2:
-                tel_resp_brigada = st.text_input("Telefone do Responsável")
-                obs_brigada = st.text_input("Observação", value="Treinamento de 8 horas.")
+                tel_resp_brigada = st.text_input("Telefone do Responsável", value=url_telefone)
+                obs_brigada = st.text_input("Observação", value="", placeholder="Ex: todas as tomadas 220V...")
                 
             st.write("---")
             st.subheader("3. Lista de Participantes")
             num_participantes = st.number_input("Número de Participantes", min_value=1, max_value=100, value=1, step=1)
             
-            # Gera os campos de Nome e CPF dinamicamente com base no número escolhido
             for i in range(num_participantes):
                 st.markdown(f"**Participante {i+1}**")
                 c1, c2 = st.columns(2)
@@ -353,12 +357,10 @@ elif st.session_state.setor_selecionado == "Projetos":
                             context["numero_participantes"] = str(num_participantes)
                             context["participantes"] = participantes
                             
-                            # Fallback de segurança para quem não alterou a tabela do modelo
-                            # Preenche as tags soltas {{ nome_part1 }}, etc. se existirem no doc
+                            # Fallback para tags numeradas caso não use o {% tr for %}
                             for idx, p in enumerate(participantes):
                                 context[f"nome_part{idx+1}"] = p["nome"]
                                 context[f"cpf_part{idx+1}"] = p["cpf"]
-                            # Limpa os que sobrarem (caso o modelo tenha 10 fixos e vc usou 5)
                             for idx in range(len(participantes), 20):
                                 context[f"nome_part{idx+1}"] = ""
                                 context[f"cpf_part{idx+1}"] = ""
