@@ -354,10 +354,11 @@ elif st.session_state.setor_selecionado == "Projetos":
                             context["tel_resp"] = tel_resp_brigada
                             context["data_treinamento"] = data_treinamento
                             context["observações"] = obs_brigada
+                            context["observacoes"] = obs_brigada # Prevenção para as duas escritas possíveis
                             context["numero_participantes"] = str(num_participantes)
                             context["participantes"] = participantes
                             
-                            # Fallback para tags numeradas caso não use o {% tr for %}
+                            # Mantém fallback de segurança caso decida usar a lista com numerais depois
                             for idx, p in enumerate(participantes):
                                 context[f"nome_part{idx+1}"] = p["nome"]
                                 context[f"cpf_part{idx+1}"] = p["cpf"]
