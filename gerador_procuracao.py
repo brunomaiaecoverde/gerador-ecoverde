@@ -11,6 +11,7 @@ import datetime
 # ==========================================
 URL_PROCURACAO = "https://docs.google.com/document/d/1LUtJrayUBGobMQ1jy2QFIeL0WoflNXNe/export?format=docx"
 URL_DISTRATO = "https://docs.google.com/document/d/1Tf6rRbCnBTBcWFr-pVDw7sBV0yZRqeqa/export?format=docx"
+URL_BRIGADA = "https://docs.google.com/document/d/1YIOmgw0CzzUGmkWZ4qe8JlOWR2N2hilh/export?format=docx"
 
 URLS_FINALIZACAO = {
     "Elaboração de Projeto de Incêndio PTD": "https://docs.google.com/document/d/1QDRxw1oArg_OYIuQi0QoffXtTOEVfJZd/export?format=docx",
@@ -90,17 +91,13 @@ def alterar_servico_fin(nome_servico):
     st.session_state.servico_finalizacao = nome_servico
 
 # ==========================================
-# ESTILO VISUAL DINÂMICO (ECOVERDE BRANDING)
+# ESTILO VISUAL DINÂMICO
 # ==========================================
 if st.session_state.setor_selecionado is None:
-    # ESTÉTICA DA TELA INICIAL (CARDS GRANDES)
     st.markdown("""
         <style>
-        /* Título Principal */
         .title-eco { text-align: center; color: #2e7d32; font-weight: 800; font-size: 2.5rem; margin-bottom: 5px; }
         .subtitle-eco { text-align: center; color: #555555; font-size: 1.1rem; margin-bottom: 40px; }
-        
-        /* Mega Cards - Metade da tela */
         div.stButton > button {
             height: 180px !important;
             font-size: 22px !important;
@@ -123,13 +120,9 @@ if st.session_state.setor_selecionado is None:
         </style>
     """, unsafe_allow_html=True)
 else:
-    # ESTÉTICA DAS TELAS INTERNAS (MENUS ALINHADOS E VERDE ECOVERDE)
     st.markdown("""
         <style>
-        /* Títulos Secundários */
         .title-eco-sec { color: #2e7d32; font-weight: bold; }
-        
-        /* Botões alinhados à esquerda para navegação fácil */
         div.stButton > button {
             text-align: left !important;
             justify-content: flex-start !important;
@@ -137,8 +130,6 @@ else:
             padding: 10px 15px !important;
             transition: 0.2s;
         }
-        
-        /* Botão Primário (Ativos/Ações) -> Verde Ecoverde */
         div.stButton > button[kind="primary"] {
             background-color: #2e7d32 !important;
             color: white !important;
@@ -149,14 +140,12 @@ else:
             background-color: #1b5e20 !important;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
-        /* Caixa de Mensagem Info */
         div.stAlert { border-left-color: #2e7d32 !important; }
         </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# NÍVEL 1: MENU DE SETORES (PÁGINA INICIAL)
+# PÁGINA INICIAL
 # ==========================================
 if st.session_state.setor_selecionado is None:
     st.markdown("<div class='title-eco'>🌱 Ecoverde Consultoria</div>", unsafe_allow_html=True)
@@ -171,7 +160,7 @@ if st.session_state.setor_selecionado is None:
         st.button("👷 EXECUÇÃO", on_click=alterar_setor, args=("Execução",), use_container_width=True)
 
 # ==========================================
-# NÍVEL 2 E 3: SETOR DE PROJETOS
+# SETOR DE PROJETOS
 # ==========================================
 elif st.session_state.setor_selecionado == "Projetos":
     
@@ -181,13 +170,16 @@ elif st.session_state.setor_selecionado == "Projetos":
         st.markdown("<h2 class='title-eco-sec'>🏗️ Setor de Projetos</h2>", unsafe_allow_html=True)
         st.write("Selecione o documento que deseja gerar:")
         
-        col1, col2, col3 = st.columns(3)
+        # Agora temos 4 botões, divididos em 4 colunas para manter o layout limpo
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.button("📄 Procuração", on_click=alterar_doc, args=("Procuração",), use_container_width=True, type="primary")
         with col2:
-            st.button("📄 Termo de Distrato", on_click=alterar_doc, args=("Termo de Distrato",), use_container_width=True, type="primary")
+            st.button("📄 Distrato", on_click=alterar_doc, args=("Termo de Distrato",), use_container_width=True, type="primary")
         with col3:
-            st.button("📄 Termo de Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True, type="primary")
+            st.button("📄 Finalização", on_click=alterar_doc, args=("Termo de Finalização",), use_container_width=True, type="primary")
+        with col4:
+            st.button("📄 Brigada", on_click=alterar_doc, args=("Brigada de Incêndio",), use_container_width=True, type="primary")
             
     elif st.session_state.doc_selecionado == "Termo de Finalização" and st.session_state.servico_finalizacao is None:
         st.button("⬅️ Voltar aos Documentos", on_click=alterar_doc, args=(None,))
@@ -235,11 +227,23 @@ elif st.session_state.setor_selecionado == "Projetos":
             endereco_obra = st.text_input("Endereço da Obra (Imóvel)", value=url_endereco_obra)
 
         st.write("---")
+        
+        # Variáveis de controle gerais
+        url_modelo = ""
         numero_parecer = ""
         info_adicional = ""
         docs_input = ""
         outros_info = ""
         
+        # Variáveis exclusivas da Brigada
+        resp_brigada = ""
+        tel_resp_brigada = ""
+        data_treinamento = ""
+        obs_brigada = ""
+        num_participantes = 1
+        participantes = []
+        
+        # LOGICAS POR DOCUMENTO
         if st.session_state.doc_selecionado == "Procuração":
             st.subheader("2. Seleção de Responsáveis (Outorgados)")
             responsaveis_selecionados = st.multiselect("Selecione os funcionários:", options=list(RESPONSAVEIS_DB.keys()), default=[])
@@ -253,7 +257,33 @@ elif st.session_state.setor_selecionado == "Projetos":
             info_adicional = st.text_input("Número do Contrato ou Informação Adicional:")
             url_modelo = URL_DISTRATO
             
-        else:
+        elif st.session_state.doc_selecionado == "Brigada de Incêndio":
+            st.subheader("2. Informações do Treinamento")
+            col_b1, col_b2 = st.columns(2)
+            with col_b1:
+                resp_brigada = st.text_input("Responsável pelo Contato")
+                data_treinamento = st.text_input("Data do Treinamento", placeholder="Ex: 15 de novembro de 2026")
+            with col_b2:
+                tel_resp_brigada = st.text_input("Telefone do Responsável")
+                obs_brigada = st.text_input("Observação", value="Treinamento de 8 horas.")
+                
+            st.write("---")
+            st.subheader("3. Lista de Participantes")
+            num_participantes = st.number_input("Número de Participantes", min_value=1, max_value=100, value=1, step=1)
+            
+            # Gera os campos de Nome e CPF dinamicamente com base no número escolhido
+            for i in range(num_participantes):
+                st.markdown(f"**Participante {i+1}**")
+                c1, c2 = st.columns(2)
+                with c1:
+                    nome_p = st.text_input(f"Nome", key=f"nome_{i}", label_visibility="collapsed", placeholder="Nome Completo")
+                with c2:
+                    cpf_p = st.text_input(f"CPF", key=f"cpf_{i}", label_visibility="collapsed", placeholder="CPF")
+                participantes.append({"nome": nome_p, "cpf": cpf_p})
+                
+            url_modelo = URL_BRIGADA
+            
+        else: # Termo de Finalização
             servico = st.session_state.servico_finalizacao
             if servico in URLS_FINALIZACAO:
                 st.success("O modelo para este serviço está configurado e pronto para geração!")
@@ -272,6 +302,7 @@ elif st.session_state.setor_selecionado == "Projetos":
                 st.warning("⚠️ O modelo para este serviço ainda não foi configurado.")
                 url_modelo = ""
 
+        # GERAÇÃO DO PDF - PROJETOS
         if url_modelo:
             st.write("---")
             if st.button(f"🚀 Gerar e Baixar {st.session_state.doc_selecionado}", type="primary"):
@@ -314,6 +345,24 @@ elif st.session_state.setor_selecionado == "Projetos":
                         elif st.session_state.doc_selecionado == "Termo de Distrato":
                             context["info_adicional"] = info_adicional
                             
+                        elif st.session_state.doc_selecionado == "Brigada de Incêndio":
+                            context["resp"] = resp_brigada
+                            context["tel_resp"] = tel_resp_brigada
+                            context["data_treinamento"] = data_treinamento
+                            context["observações"] = obs_brigada
+                            context["numero_participantes"] = str(num_participantes)
+                            context["participantes"] = participantes
+                            
+                            # Fallback de segurança para quem não alterou a tabela do modelo
+                            # Preenche as tags soltas {{ nome_part1 }}, etc. se existirem no doc
+                            for idx, p in enumerate(participantes):
+                                context[f"nome_part{idx+1}"] = p["nome"]
+                                context[f"cpf_part{idx+1}"] = p["cpf"]
+                            # Limpa os que sobrarem (caso o modelo tenha 10 fixos e vc usou 5)
+                            for idx in range(len(participantes), 20):
+                                context[f"nome_part{idx+1}"] = ""
+                                context[f"cpf_part{idx+1}"] = ""
+                            
                         elif st.session_state.doc_selecionado == "Termo de Finalização":
                             context["outros"] = outros_info
                             if st.session_state.servico_finalizacao in ["Relatório de Impacto na Circulação", "Vigilância Sanitária", "Estudo de Impacto na Vizinhança"]:
@@ -340,7 +389,7 @@ elif st.session_state.setor_selecionado == "Projetos":
                         st.error(f"Erro ao processar arquivo: {e}")
 
 # ==========================================
-# NÍVEL 2 E 3: SETOR DE EXECUÇÃO
+# SETOR DE EXECUÇÃO
 # ==========================================
 elif st.session_state.setor_selecionado == "Execução":
     
